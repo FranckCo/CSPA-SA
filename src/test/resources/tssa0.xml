@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<trs:tramoseatsSpec xmlns:trs="ec/tss.tramoseats">
+    <trs:transformSpec>
+        <trs:level/>
+    </trs:transformSpec>
+    <trs:arimaSpec>
+        <trs:spec>
+            <trs:mean>false</trs:mean>
+            <trs:p>0</trs:p>
+            <trs:d>1</trs:d>
+            <trs:q>1</trs:q>
+            <trs:bp>0</trs:bp>
+            <trs:bd>1</trs:bd>
+            <trs:bq>1</trs:bq>
+        </trs:spec>
+    </trs:arimaSpec>
+    <trs:decompositionSpec/>
+</trs:tramoseatsSpec>

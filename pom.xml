@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.insee.cspa</groupId>
+	<artifactId>seasonal-adjustment-service</artifactId>
+	<version>0.1</version>
+	<packaging>war</packaging>
+	<name>Implementation of the CSPA Seasonal Adjustment Service</name>
+	<dependencies>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<!-- Targeting Servlet API 2.5. For version 3.0, use "jersey-container-servlet". -->
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sat</groupId>
+			<artifactId>demetra-tstoolkit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sat</groupId>
+			<artifactId>demetra-tss</artifactId>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sat</groupId>
+				<artifactId>demetra-parent</artifactId>
+				<version>${demetra.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<properties>
+		<demetra.version>1.4.1</demetra.version>
+	</properties>
+	<repositories>
+		<repository>
+			<id>joinup-releases</id>
+			<url>https://joinup.ec.europa.eu/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>joinup-snapshots</id>
+			<url>https://joinup.ec.europa.eu/nexus/content/repositories/snapshots/</url>
+		</repository>
+	</repositories>
+</project>

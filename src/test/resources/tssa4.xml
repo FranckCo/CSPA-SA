@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<trs:tramoseatsSpec xmlns:trs="ec/tss.tramoseats" xmlns:sa="ec/tss.sa" xmlns:tss="ec/tss.core">
+    <trs:transformSpec>
+        <trs:auto>
+            <trs:fct>0.95</trs:fct>
+        </trs:auto>
+    </trs:transformSpec>
+    <trs:outlierSpec>
+        <sa:span>
+            <tss:all/>
+        </sa:span>
+        <trs:types>AO TC LS</trs:types>
+        <trs:va>0.0</trs:va>
+        <trs:imvx>0</trs:imvx>
+        <trs:tcrate>0.7</trs:tcrate>
+    </trs:outlierSpec>
+    <trs:autoModelSpec/>
+    <trs:calendarSpec>
+        <trs:tradingDays testType="Separate_T">
+            <trs:tdOption>WorkingDays</trs:tdOption>
+            <trs:lpOption>LeapYear</trs:lpOption>
+        </trs:tradingDays>
+        <trs:movingHolidays>
+            <trs:easter pretest="true">
+                <trs:duration>6</trs:duration>
+            </trs:easter>
+        </trs:movingHolidays>
+    </trs:calendarSpec>
+    <trs:decompositionSpec/>
+</trs:tramoseatsSpec>
