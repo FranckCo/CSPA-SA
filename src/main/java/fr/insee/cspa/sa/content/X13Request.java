@@ -11,11 +11,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import ec.tss.xml.XmlTsData;
 import ec.tss.xml.regression.XmlTsVariable;
-import ec.tss.xml.tramoseats.XmlTramoSeatsSpecification;
+import ec.tss.xml.x13.XmlX13Specification;
 
-@XmlRootElement(name = "TSRequest")
+@XmlRootElement(name = "X13Request")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class TSRequest {
+public class X13Request {
 
     @XmlElement(name = "Series")
     private XmlTsData series;
@@ -24,7 +24,7 @@ public class TSRequest {
     private PreSpecificationEnum preSpecification;
 
     @XmlElement(name = "Specification")
-    private XmlTramoSeatsSpecification specification;
+    private XmlX13Specification specification;
 
     @XmlElementWrapper(name = "UserRegressors")
     @XmlElement(name="UserRegressor")
@@ -50,11 +50,11 @@ public class TSRequest {
 		this.preSpecification = preSpecification;
 	}
 
-	public XmlTramoSeatsSpecification getSpecification() {
+	public XmlX13Specification getSpecification() {
 		return specification;
 	}
 
-	public void setSpecification(XmlTramoSeatsSpecification specification) {
+	public void setSpecification(XmlX13Specification specification) {
 		this.specification = specification;
 	}
 

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://xml.unece.org/cspa" xmlns:trs="ec/tss.tramoseats" xmlns:tss="ec/tss.core"
+    xmlns:x13="ec/tss.x13" xmlns:ss="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific"
+    elementFormDefault="qualified" targetNamespace="http://xml.unece.org/cspa">
+
+    <xs:import namespace="ec/tss.tramoseats" schemaLocation="sas-trs.xsd"/>
+    <xs:import namespace="ec/tss.x13" schemaLocation="sas-x13.xsd"/>
+    <xs:import namespace="ec/tss.core" schemaLocation="sas-tss.xsd"/>
+    <!-- TODO Change schemaLocation to the reference location on sdmx.org -->
+    <xs:import namespace="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/structurespecific" schemaLocation="http://ec.europa.eu/eurostat/SDMX/diss-ws/SdmxServiceService?xsd=8"/>
+
+    <!-- TODO Make an abstract common RequestType -->
+    <!-- TODO Add operational attributes (origin, etc.) -->
+    <xs:element name="TSRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element name="Series" type="tss:tsDataType"/>
+                    <xs:element name="SDMXSeries" type="ss:TimeSeriesType"/>
+                </xs:choice>
+                <xs:element name="PreSpecification" type="PreSpecificationEnum" minOccurs="0"/>
+                <xs:element name="Specification" type="trs:tramoseatsSpecType" minOccurs="0"/>
+                <xs:element name="UserRegressors" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="UserRegressor" type="tss:TsVariableType" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="OutputFilter" minOccurs="0">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:token"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="X13Request">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element name="Series" type="tss:tsDataType"/>
+                    <xs:element name="SDMXSeries" type="ss:TimeSeriesType"/>
+                </xs:choice>
+                <xs:element name="PreSpecification" type="PreSpecificationEnum" minOccurs="0"/>
+                <xs:element name="Specification" type="x13:x13SpecType" minOccurs="0"/>
+                <xs:element name="UserRegressors" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="UserRegressor" type="tss:TsVariableType" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="OutputFilter" minOccurs="0">
+                    <xs:simpleType>
+                        <xs:list itemType="xs:token"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- TODO Check name and document -->
+    <xs:simpleType name="PreSpecificationEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="RSA0"/>
+            <xs:enumeration value="RSA1"/>
+            <xs:enumeration value="RSA2"/>
+            <xs:enumeration value="RSA3"/>
+            <xs:enumeration value="RSA4"/>
+            <xs:enumeration value="RSA5"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

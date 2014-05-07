@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:x13="ec/tss.x13" xmlns:uscb="ec/tss.uscb" xmlns:sa="ec/tss.sa" targetNamespace="ec/tss.x13" elementFormDefault="qualified">
+
+    <xs:import namespace="ec/tss.uscb" schemaLocation="sas-uscb.xsd"/>
+    <xs:import namespace="ec/tss.sa" schemaLocation="sas-sa.xsd"/>
+
+    <xs:element name="x13Spec" type="x13:x13SpecType"/>
+
+    <xs:complexType name="x13SpecType">
+        <xs:sequence>
+            <!-- Check if next element is in this namespace or in uscb -->
+            <!-- basicSpec not used in standard specifications -->
+            <xs:element name="basicSpec" type="uscb:basicSpecType"/>
+            <xs:element name="transformSpec" type="uscb:transformSpecType"/>
+            <xs:choice>
+                <!-- Either one or the other seems to be required -->
+                <!-- autoModelSpec always empty in standard specifications -->
+                <xs:element name="autoModelSpec" type="x13:autoModelSpecType"/>
+                <xs:element name="arimaSpec" type="x13:arimaSpecType"/>
+            </xs:choice>
+            <xs:element name="calendarSpec" type="uscb:calendarSpecType"/>
+            <xs:element name="regressionSpec" type="sa:regressionSpecType"/>
+            <xs:element name="outlierSpec" type="uscb:outlierSpecType"/>
+            <xs:element name="estimateSpec" type="uscb:estimateSpecType"/>
+            <xs:element name="x11Spec" type="uscb:x11SpecType"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:token"/>
+    </xs:complexType>
+
+    <xs:complexType name="autoModelSpecType">
+        <xs:sequence>
+            <xs:element name="acceptDef" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="checkMu" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="mixed" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="balanced" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="hr" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="cancel" type="xs:double" minOccurs="0"/>
+            <xs:element name="fct" type="xs:double" minOccurs="0"/>
+            <xs:element name="ljungbox" type="xs:double" minOccurs="0"/>
+            <xs:element name="predcv" type="xs:double" minOccurs="0"/>
+            <xs:element name="armaLimit" type="xs:double" minOccurs="0"/>
+            <xs:element name="ub1" type="xs:double" minOccurs="0"/>
+            <xs:element name="ub2" type="xs:double" minOccurs="0"/>
+            <xs:element name="ubFinal" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="arimaSpecType">
+        <xs:sequence>
+            <!-- Not used in standard specifications, could use tss:EMPTY -->
+            <xs:element name="mean" fixed="" minOccurs="0"/>
+            <xs:choice>
+                <xs:element name="spec" type="uscb:arimaOrdersType"/>
+                <xs:element name="model" type="uscb:arimaPolynomialsType"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

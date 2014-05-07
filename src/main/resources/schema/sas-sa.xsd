@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sa="ec/tss.sa"  xmlns:tss="ec/tss.core" targetNamespace="ec/tss.sa" elementFormDefault="qualified">
+
+    <xs:import namespace="ec/tss.core" schemaLocation="sas-tss.xsd"/>
+
+    <xs:element name="span" type="tss:periodSelectionType"/>
+
+    <!-- Here could be defined an abstractXmlSaSpecification type corresponding to ec.tss.xml.sa.AbstractXmlSaSpecification. -->
+    <!-- This type just defines a 'name' attribute for the specification. TS and X13 specification would be extensions.      -->
+    <!-- For now, to avoid complexity, le 'name' attribute is defined directly on both specification types.                  -->
+    
+    <xs:complexType name="regressionSpecType">
+        <xs:sequence>
+            <!-- TODO This part is probably wrong -->
+            <xs:element name="preSpecifiedOutliers" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:choice>
+                        <xs:element name="ao" type="sa:aoType"/>
+                        <xs:element name="ls" type="sa:lsType"/>
+                        <xs:element name="tc" type="sa:tcType"/>
+                        <xs:element name="so" type="sa:soType"/>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="variable" type="tss:tsVariableDescriptorType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="intervention" type="tss:interventionType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="ramp" type="tss:rampType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="abstractXmlOutlierDefinition" abstract="true">
+        <xs:sequence/>
+        <xs:attribute name="period" type="xs:string"/>
+        <xs:attribute name="prespecified" type="xs:boolean"/>
+    </xs:complexType>
+    
+    <xs:complexType name="aoType">
+        <xs:complexContent>
+            <xs:extension base="sa:abstractXmlOutlierDefinition">
+                <xs:sequence/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="lsType">
+        <xs:complexContent>
+            <xs:extension base="sa:abstractXmlOutlierDefinition">
+                <xs:sequence/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="tcType">
+        <xs:complexContent>
+            <xs:extension base="sa:abstractXmlOutlierDefinition">
+                <xs:sequence/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="soType">
+        <xs:complexContent>
+            <xs:extension base="sa:abstractXmlOutlierDefinition">
+                <xs:sequence/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Defined in this namespace because it is used by TS and X13 -->
+    <!-- Corresponding Java enum is in a different package (ec.tstoolkit.timeseries.regression) -->
+    <xs:simpleType name="outlierType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SLS"/>
+            <xs:enumeration value="TLS"/>
+            <xs:enumeration value="WO"/>
+            <xs:enumeration value="IO"/>
+            <xs:enumeration value="TC"/>
+            <xs:enumeration value="LS"/>
+            <xs:enumeration value="Undefined"/>
+            <xs:enumeration value="AO"/>
+            <xs:enumeration value="SO"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

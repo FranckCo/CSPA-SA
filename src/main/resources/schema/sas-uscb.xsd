@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:uscb="ec/tss.uscb" xmlns:tss="ec/tss.core" xmlns:sa="ec/tss.sa" targetNamespace="ec/tss.uscb" elementFormDefault="qualified">
+
+    <xs:import namespace="ec/tss.core" schemaLocation="sas-tss.xsd"/>
+    <xs:import namespace="ec/tss.sa" schemaLocation="sas-sa.xsd"/>
+
+    <xs:complexType name="basicSpecType">
+        <xs:sequence>
+            <xs:element name="span" type="tss:periodSelectionType"/>
+        </xs:sequence>
+        <xs:attribute name="preprocess" type="xs:boolean" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="transformSpecType">
+        <xs:sequence>
+            <xs:element name="constant" type="xs:double" minOccurs="0"/>
+            <xs:choice> <!-- Always void element 'auto' in standard specifications -->
+                <xs:element name="auto" type="uscb:autoTransformSpecType"/>
+                <xs:element name="log" type="uscb:logTransformSpecType"/>
+                <xs:element name="level" type="uscb:levelTransformSpecType"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="logTransformSpecType">
+        <xs:sequence>
+            <xs:element name="permanentPrior" type="xs:string" minOccurs="0"/>
+            <xs:element name="temporaryPrior" type="xs:string" minOccurs="0"/>
+            <xs:element name="adjust" type="uscb:lengthOfPeriodType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="autoTransformSpecType">
+        <xs:sequence>
+            <xs:element name="aicDiff" type="xs:double" minOccurs="0"/>
+            <xs:element name="adjust"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="levelTransformSpecType">
+        <xs:sequence>
+            <xs:element name="permanentPrior" type="xs:string" minOccurs="0"/>
+            <xs:element name="temporaryPrior" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- TODO Same type in 'trs' namespace: mutualize -->
+    <xs:simpleType name="lengthOfPeriodType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="LeapYear"/>
+            <xs:enumeration value="LengthOfPeriod"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="arimaOrdersType">
+        <xs:sequence>
+            <xs:element name="mean" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="p" type="xs:int"/>
+            <xs:element name="d" type="xs:int"/>
+            <xs:element name="q" type="xs:int"/>
+            <xs:element name="bp" type="xs:int"/>
+            <xs:element name="bd" type="xs:int"/>
+            <xs:element name="bq" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="arimaPolynomialsType">
+        <xs:sequence>
+            <xs:element name="mean" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="phi" type="xs:string" minOccurs="0"/>
+            <xs:element name="d" type="xs:int"/>
+            <xs:element name="th" type="xs:string" minOccurs="0"/>
+            <xs:element name="bphi" type="xs:string" minOccurs="0"/>
+            <xs:element name="bd" type="xs:int"/>
+            <xs:element name="bth" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="calendarSpecType">
+        <xs:sequence>
+            <!-- Strange JAXB annotations on corresponding member of XmlCalendarSpec class -->
+            <xs:element name="tdVariables" type="uscb:tdVariableSpecType" minOccurs="0"/>
+            <!-- Always present in standard specifications, even if empty (RSA1). Required? -->
+            <xs:element name="movingHolidaySpec">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="movingHolidaySpecType" type="uscb:movingHolidaySpecType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="aiccDiff" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="tdVariableSpecType">
+        <!-- All elements seem to be optional -->
+        <xs:sequence>
+            <xs:element name="tdoption" type="uscb:xmlTradingDaysOption" minOccurs="0"/>
+            <xs:element name="lpoption" type="uscb:xmlLengthOfPeriodOption" minOccurs="0"/>
+            <xs:element name="aicTest" type="uscb:regressionTestSpecEnum" minOccurs="0"/>
+            <xs:element name="changeOfRegime" type="uscb:changeOfRegimeSpecType" minOccurs="0"/>
+            <xs:element name="holidays" type="xs:string" minOccurs="0"/>
+            <xs:element name="userVariables" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="changeOfRegimeSpecType">
+        <xs:sequence>
+            <xs:element name="date" type="xs:string" minOccurs="0"/>
+            <xs:element name="type" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="movingHolidaySpecType">
+        <!-- TODO Test if all elements optional -->
+        <xs:sequence>
+            <xs:element name="type" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="None"/>
+                        <xs:enumeration value="Easter"/>
+                        <xs:enumeration value="Thank"/>
+                        <xs:enumeration value="SCEaster"/>
+                        <xs:enumeration value="Labor"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="w" type="xs:int" minOccurs="0"/>
+            <xs:element name="changeOfRegime" type="uscb:changeOfRegimeSpecType" minOccurs="0"/>
+            <xs:element name="aicTest" type="uscb:regressionTestSpecEnum" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="outlierSpecType">
+        <xs:sequence>
+            <xs:element name="span" type="tss:periodSelectionType"/>
+            <xs:element name="defaultCv" type="xs:double"/>
+            <xs:element name="type">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="outlier" type="uscb:singleOutlierSpecType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="lsrun" type="xs:int" minOccurs="0"/>
+            <xs:element name="method">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="AddOne"/>
+                        <xs:enumeration value="AddAll"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="tcrate" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="singleOutlierSpecType">
+        <xs:sequence>
+            <xs:element name="type" type="sa:outlierType"/>
+            <xs:element name="cv" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="estimateSpecType">
+        <xs:sequence>
+            <xs:element name="tol" type="xs:double" minOccurs="0"/>
+            <xs:element name="maxiter" type="xs:int" minOccurs="0"/>
+            <xs:element name="likelihood" type="uscb:exactLikelihood" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="x11SpecType">
+        <xs:sequence>
+            <xs:element name="mode" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="Undefined"/>
+                        <xs:enumeration value="Additive"/>
+                        <xs:enumeration value="Multiplicative"/>
+                        <xs:enumeration value="LogAdditive"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="useForecasts" type="xs:boolean" minOccurs="0" default="true"/>
+            <xs:element name="seasonalma" minOccurs="0">
+                <xs:simpleType>
+                    <xs:list itemType="uscb:seasonalFilterOptionEnum"/>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="lsigma" type="xs:double" minOccurs="0" default="1.5"/>
+            <xs:element name="usigma" type="xs:double" minOccurs="0" default="2.5"/>
+            <xs:element name="trendma" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="xmlTradingDaysOption">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="Td1NoLpYear"/>
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Td1Coef"/>
+            <xs:enumeration value="TdNoLpYear"/>
+            <xs:enumeration value="Td"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="xmlLengthOfPeriodOption">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="LengthofPeriod"/>
+            <xs:enumeration value="LpYear"/>
+            <xs:enumeration value="None"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="regressionTestSpecEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Add"/>
+            <xs:enumeration value="Remove"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="exactLikelihood">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Arma"/>
+            <xs:enumeration value="Ma"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="seasonalFilterOptionEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="S3X1"/>
+            <xs:enumeration value="S3X3"/>
+            <xs:enumeration value="S3X5"/>
+            <xs:enumeration value="S3X9"/>
+            <xs:enumeration value="S3X15"/>
+            <xs:enumeration value="Stable"/>
+            <xs:enumeration value="X11Default"/>
+            <xs:enumeration value="Msr"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

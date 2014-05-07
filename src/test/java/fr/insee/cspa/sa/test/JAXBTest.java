@@ -109,6 +109,8 @@ public class JAXBTest {
 		xmlTsVariable.name = "Regressor One";
 		tsRequest.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
 
+		tsRequest.setOutputFilter(Arrays.asList("item1", "item2", "item3"));
+
 		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
     	Marshaller marshaller = context.createMarshaller();
 		marshaller.marshal(tsRequest, new PrintWriter(System.out));
@@ -264,7 +266,7 @@ public class JAXBTest {
 
 		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
 		// Only the necessary output will be computed
-		String[] filters = new String[] {"s","sa","t", "i", "s_f","sa_f","t_f", "i_f", "mstat*"};
+		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "mstat*"};
 		Set<String> set = new HashSet<String>(Arrays.asList(filters));
 
 		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);
@@ -303,7 +305,7 @@ public class JAXBTest {
 		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
 		// Only the necessary output will be computed
 
-		String[] filters = new String[] {"s","sa","t", "i", "s_f","sa_f","t_f", "i_f", "mstat*"};
+		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "mstat*"};
 		Set<String> set = new HashSet<String>(Arrays.asList(filters));
 
 		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);

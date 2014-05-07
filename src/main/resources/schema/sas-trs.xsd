@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:trs="ec/tss.tramoseats" xmlns:sa="ec/tss.sa" targetNamespace="ec/tss.tramoseats" elementFormDefault="qualified">
+
+    <xs:import namespace="ec/tss.sa" schemaLocation="sas-sa.xsd"/>
+
+    <xs:element name="tramoseatsSpec" type="trs:tramoseatsSpecType"/>
+    <xs:complexType name="tramoseatsSpecType">
+        <xs:sequence>
+            <!-- Seems to be required -->
+            <xs:element name="transformSpec" type="trs:transformSpecType"/>
+            <!-- Not in RSA0, for example -->
+            <xs:element name="outlierSpec" type="trs:outlierSpecType" minOccurs="0"/>
+            <xs:choice>
+                <!-- Either one or the other seems to be required -->
+                <!-- autoModelSpec always empty in standard specifications -->
+                <xs:element name="autoModelSpec" type="trs:autoTransformSpecType"/>
+                <xs:element name="arimaSpec" type="trs:arimaSpecType"/>
+            </xs:choice>
+            <!-- Not in RSA0, for example -->
+            <xs:element name="calendarSpec" type="trs:calendarSpecType" minOccurs="0"/>
+            <!-- Next two elements not used in standard specifications -->
+            <!-- TODO regressionSpec makes JAXB schemagen crash -->
+            <xs:element name="regressionSpec" type="sa:regressionSpecType" minOccurs="0"/>
+            <xs:element name="estimateSpec" type="trs:estimateSpecType" minOccurs="0"/>
+            <!-- TODO is decompositionSpec required? -->
+            <xs:element name="decompositionSpec" type="trs:seatsSpecType"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:token"/>
+    </xs:complexType>
+
+    <xs:complexType name="transformSpecType">
+        <xs:sequence>
+            <!-- Not used in standard specifications -->
+            <xs:element ref="sa:span" minOccurs="0"/>
+            <xs:choice>
+                <xs:element name="auto" type="trs:autoTransformSpecType"/>
+                <xs:element name="log"/>
+                <xs:element name="level"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="outlierSpecType">
+        <xs:sequence>
+            <!-- Comes from AbstractXmlOutlierSpec, not sure it should be required -->
+            <xs:element ref="sa:span"/>
+            <!-- Required? -->
+            <xs:element name="types">
+                <xs:simpleType>
+                    <xs:list itemType="sa:outlierType"/>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="va" type="xs:double" minOccurs="0"/>
+            <xs:element name="imvx" type="xs:int" minOccurs="0"/>
+            <xs:element name="tcrate" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="autoTransformSpecType">
+        <xs:sequence>
+            <xs:element name="fct" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Check if this type is useful since corresponding element is always empty in standard specifications -->
+    <xs:complexType name="autoModelSpecType">
+        <xs:sequence>
+            <xs:element name="pcr" type="xs:double" minOccurs="0"/>
+            <xs:element name="ub1" type="xs:double" minOccurs="0"/>
+            <xs:element name="ub2" type="xs:double" minOccurs="0"/>
+            <xs:element name="cancel" type="xs:double" minOccurs="0"/>
+            <xs:element name="tsig" type="xs:double" minOccurs="0"/>
+            <xs:element name="pc" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="arimaSpecType">
+        <xs:sequence>
+            <!-- Not used in standard specifications, could use tss:EMPTY -->
+            <xs:element name="mean" fixed="" minOccurs="0"/>
+            <xs:choice>
+                <xs:element name="spec" type="trs:arimaOrdersType"/>
+                <!-- Not used in standard specifications -->
+                <xs:element name="model" type="trs:arimaPolynomialsType"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Check if all elements are required -->
+    <xs:complexType name="arimaOrdersType">
+        <xs:sequence>
+            <xs:element name="mean" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="p" type="xs:int"/>
+            <xs:element name="d" type="xs:int"/>
+            <xs:element name="q" type="xs:int"/>
+            <xs:element name="bp" type="xs:int"/>
+            <xs:element name="bd" type="xs:int"/>
+            <xs:element name="bq" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Check if this type is useful since corresponding element is always empty in standard specifications -->
+    <!-- Check if all elements are required -->
+    <xs:complexType name="arimaPolynomialsType">
+        <xs:sequence>
+            <xs:element name="phi" type="xs:token"/>
+            <xs:element name="d" type="xs:int"/>
+            <xs:element name="th" type="xs:token"/>
+            <xs:element name="bphi" type="xs:token"/>
+            <xs:element name="bd" type="xs:int"/>
+            <xs:element name="bth" type="xs:token"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="calendarSpecType">
+        <xs:sequence>
+            <xs:element name="tradingDays" type="trs:tradingDaysSpecType" minOccurs="0"/>
+            <xs:element name="movingHolidays" type="trs:movingHolidaysSpecType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="tradingDaysSpecType">
+        <xs:sequence>
+            <xs:element name="calendar" type="xs:string" minOccurs="0"/>
+            <xs:element name="userVariables" minOccurs="0">
+                <!-- TODO Check this type, especially the use of 'string' as element name -->
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="tdOption" type="trs:tradingDaysType" minOccurs="0"/>
+            <xs:element name="lpOption" type="trs:lengthOfPeriodType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="pretest" type="xs:boolean"/>
+        <xs:attribute name="testType" type="trs:regressionTestType"/>
+    </xs:complexType>
+
+    <xs:simpleType name="tradingDaysType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="TradingDays"/>
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="WorkingDays"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="lengthOfPeriodType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="LeapYear"/>
+            <xs:enumeration value="LengthOfPeriod"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="regressionTestType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Joint_F"/>
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Separate_T"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="movingHolidaysSpecType">
+        <xs:sequence>
+            <xs:element name="easter" type="trs:easterSpecType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="easterSpecType">
+        <xs:sequence>
+            <!-- Default value is 6 -->
+            <xs:element name="duration" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="pretest" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="seatsSpecType">
+        <xs:sequence>
+            <xs:element name="epsphi" type="xs:double" minOccurs="0"/>
+            <xs:element name="rmod" type="xs:double" minOccurs="0"/>
+            <xs:element name="xl" type="xs:double" minOccurs="0"/>
+            <xs:element name="mode" type="trs:approximationMode" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="approximationMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Noisy"/>
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="Legacy"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="estimateSpecType">
+        <xs:sequence>
+            <xs:element name="eml" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="tol" type="xs:double" minOccurs="0"/>
+            <xs:element name="ubp" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
