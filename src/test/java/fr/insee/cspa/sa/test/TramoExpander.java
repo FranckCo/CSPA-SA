@@ -28,7 +28,6 @@ public class TramoExpander implements ITsModifier {
     	model=specification.build().process(series, new ModellingContext());
     }
 
-	@Override
 	public void data(TsDomain domain, List<DataBlock> data, int start) {
 
         TsDomain vdom = variable.getTsData().getDomain();
@@ -46,37 +45,30 @@ public class TramoExpander implements ITsModifier {
         data.get(start).copy(series);
 	}
 
-	@Override
 	public TsDomain getDefinitionDomain() {
 		return null;
 	}
 
-	@Override
 	public TsFrequency getDefinitionFrequency() {
 		return variable.getDefinitionFrequency();
 	}
 
-	@Override
 	public String getDescription() {
 		return variable.getDescription();
 	}
 
-	@Override
 	public int getDim() {
 		return 1;
 	}
 
-	@Override
 	public String getItemDescription(int index) {
 		return variable.getItemDescription(index);
 	}
 
-	@Override
 	public boolean isSignificant(TsDomain domain) {
 		return domain.getFrequency() == variable.getDefinitionFrequency();
 	}
 
-	@Override
 	public ITsVariable getVariable() {
 		return variable;
 	}

@@ -1,21 +1,24 @@
 package fr.insee.cspa.sa.test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.FileReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,25 +32,15 @@ import ec.tss.xml.regression.XmlTsVariable;
 import ec.tss.xml.tramoseats.XmlTramoSeatsSpecification;
 import ec.tss.xml.x13.XmlX13Specification;
 import ec.tstoolkit.algorithm.CompositeResults;
-import ec.tstoolkit.algorithm.SequentialProcessing;
 import ec.tstoolkit.information.InformationSet;
 import ec.tstoolkit.information.InformationSetHelper;
-import ec.tstoolkit.modelling.ChangeOfRegimeSpec;
-import ec.tstoolkit.modelling.ChangeOfRegimeSpec.Type;
-import ec.tstoolkit.modelling.TsVariableDescriptor;
-import ec.tstoolkit.modelling.arima.x13.MovingHolidaySpec;
-import ec.tstoolkit.modelling.arima.x13.RegressionSpec;
-import ec.tstoolkit.modelling.arima.x13.TradingDaysSpec;
-import ec.tstoolkit.timeseries.Day;
-import ec.tstoolkit.timeseries.Month;
-import ec.tstoolkit.timeseries.regression.InterventionVariable;
-import ec.tstoolkit.timeseries.regression.Ramp;
 import ec.tstoolkit.timeseries.regression.TsVariable;
 import ec.tstoolkit.timeseries.simplets.TsData;
 import ec.tstoolkit.timeseries.simplets.TsFrequency;
 import ec.tstoolkit.timeseries.simplets.TsPeriod;
 import fr.insee.cspa.sa.content.PreSpecificationEnum;
 import fr.insee.cspa.sa.content.TSRequest;
+import fr.insee.cspa.sa.content.X13Request;
 
 public class JAXBTest {
 
@@ -59,76 +52,262 @@ public class JAXBTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	static double[] values = new double[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-
-	@Test
-	public void testMarshallTsData() throws JAXBException {
-
-		TsPeriod start = new TsPeriod(TsFrequency.Monthly, 2012, 0);
-		TsData series = new TsData(start, values, true);
-
-		XmlTsData xmlSeries = new XmlTsData();
-		xmlSeries.copy(series);
-
-    	JAXBContext context = JAXBContext.newInstance(XmlTsData.class);
-    	Marshaller marshaller = context.createMarshaller();
-		marshaller.marshal(xmlSeries, new PrintWriter(System.out));
+	/** Internal time series reader */
+	private TsData readTsData(String filename) throws Exception {
+		
+		BufferedReader buffer; String line; String sep = ";";
+	    ArrayList<Double> values = new ArrayList<Double>(); 
+	    ArrayList<Date> dates = new ArrayList<Date>();
+	    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+	    
+		buffer = new BufferedReader(new FileReader(filename));
+		try {
+			buffer.readLine();
+			while ((line = buffer.readLine()) != null) {
+				String[] elements = line.split(sep);
+				if (elements.length < 2) continue; 
+				dates.add(format.parse(elements[0]));
+				values.add(Double.parseDouble(elements[1].replace(",",".")));
+			}
+		}
+		catch(Exception e) {buffer.close(); throw e;}
+		buffer.close();
+		
+		if (dates.size()<2) throw new Exception("too short file");
+		int duration = (int)((dates.get(1).getTime() - dates.get(0).getTime())/(1000.*3600*24*28));
+		TsFrequency frequency = TsFrequency.valueOf(12/duration);
+		TsPeriod start = new TsPeriod(frequency, dates.get(0));
+		double[] data = new double[values.size()];
+		int i=0; for (Double d : values) data[i++]=d.doubleValue(); 
+		TsData series = new TsData(start, data, true);
+		return series;
 	}
-
+	
+	
+	/** Test reading XML formatted time series */ 
 	@Test
-	public void testUnmarshallTsData() throws JAXBException, IOException {
+	public void testUnmarshallTsData() throws Exception {
+	
+    	JAXBContext context = JAXBContext.newInstance(XmlTsData.class);
+		
+		TsData reference = readTsData("src/test/resources/RF061.csv");
+		XmlTsData xmlReference = new XmlTsData();
+		xmlReference.copy(reference);
 
-		JAXBContext context = JAXBContext.newInstance(XmlTsData.class);
-
+		FileOutputStream stream = new FileOutputStream("src/test/resources/RF061.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		
+    	Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(xmlReference, writer); 
+		writer.flush();
+		
 		Unmarshaller unmarshaller = context.createUnmarshaller();
-		XmlTsData xmlSeries = (XmlTsData) unmarshaller.unmarshal(new File("src/test/resources/tsdata.xml"));
+		XmlTsData xmlSeries = (XmlTsData) unmarshaller.unmarshal(new File("src/test/resources/RF061.xml"));
 		TsData series = xmlSeries.create();
 
-		System.out.println(series);
+		Assert.assertEquals(0.0,series.distance(reference),1e-12);
 	}
 
+    /** Test reading TSRequest */
 	@Test
-	public void testMarshallTSRequest() throws JAXBException {
+	public void testUnmarshallTSRequest() throws Exception {
 
+		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
+		
 		TSRequest tsRequest = new TSRequest();
 
-		TsData series = new TsData(new TsPeriod(TsFrequency.Monthly, 2012, 0), values, true);
+		TsData reference = readTsData("src/test/resources/RF061.csv");
 		XmlTsData xmlSeries = new XmlTsData();
-		xmlSeries.copy(series);
-
+		xmlSeries.copy(reference);
+		
+		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
+		TsVariable tsVariable = new TsVariable("REG1", reg1);
+		XmlTsVariable xmlTsVariable = new XmlTsVariable();
+		xmlTsVariable.copy(tsVariable);
+		xmlTsVariable.name = "REG1LPY";
+		tsRequest.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
+		
+		TramoSeatsSpecification specification = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
+		//TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY");  // bug in XmlTsVariableDescriptor
+		//descriptor.setEffect(ComponentType.Series); 
+		//specification.getTramoSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor});
 		XmlTramoSeatsSpecification xmlSpec = new XmlTramoSeatsSpecification();
-		xmlSpec.copy(TramoSeatsSpecification.RSA5.clone());
+		xmlSpec.copy(specification);
 
 		tsRequest.setSeries(xmlSeries);
 		tsRequest.setPreSpecification(PreSpecificationEnum.RSA3);
 		tsRequest.setSpecification(xmlSpec);
+		
+		tsRequest.setOutputFilter(Arrays.asList("y", "ycal", "tde"));
 
-		TsVariable tsVariable = new TsVariable("Series One", series);
-		XmlTsVariable xmlTsVariable = new XmlTsVariable();
-		xmlTsVariable.copy(tsVariable);
-		xmlTsVariable.name = "Regressor One";
-		tsRequest.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
-
-		tsRequest.setOutputFilter(Arrays.asList("item1", "item2", "item3"));
-
-		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
+		FileOutputStream stream = new FileOutputStream("src/test/resources/tsrequest.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		
     	Marshaller marshaller = context.createMarshaller();
-		marshaller.marshal(tsRequest, new PrintWriter(System.out));
-	}
-
-	@Test
-	public void testUnmarshallTSRequest() throws JAXBException {
-
-		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(tsRequest,writer);
+		writer.flush();
 
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		TSRequest xmlTSRequest = (TSRequest) unmarshaller.unmarshal(new File("src/test/resources/tsrequest.xml"));
 		TsData series = xmlTSRequest.getSeries().create();
 
-		System.out.println(series);
+		Assert.assertEquals(0.0,series.distance(reference),1e-12);
 	}
 
+    /** Test easter in tramoseats specification */	
 	@Test
+	public void testEasterTSSpecification() throws Exception {
+
+		JAXBContext context = JAXBContext.newInstance(XmlTramoSeatsSpecification.class);
+		
+		TramoSeatsSpecification reference = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
+		reference.getTramoSpecification().getRegression().getCalendar().getEaster().setDuration(2);
+		XmlTramoSeatsSpecification xmlReference = new XmlTramoSeatsSpecification();
+		xmlReference.copy(reference);
+
+		FileOutputStream stream = new FileOutputStream("src/test/resources/tseaster.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		
+    	Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(xmlReference,writer);
+		writer.flush();
+		
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		XmlTramoSeatsSpecification xmlSpec = (XmlTramoSeatsSpecification) unmarshaller.unmarshal(new File("src/test/resources/tseaster.xml"));
+		TramoSeatsSpecification specification = xmlSpec.create();
+		
+		Assert.assertEquals(2,specification.getTramoSpecification().getRegression().getCalendar().getEaster().getDuration());	
+	}	
+
+    /** Test reading X13Request */
+	@Test
+	public void testUnmarshallX13Request() throws Exception {
+
+		JAXBContext context = JAXBContext.newInstance(X13Request.class);
+		
+		X13Request x13request = new X13Request();
+
+		TsData reference = readTsData("src/test/resources/RF061.csv");
+		XmlTsData xmlSeries = new XmlTsData();
+		xmlSeries.copy(reference);
+		
+		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
+		TsVariable tsVariable = new TsVariable("REG1", reg1);
+		XmlTsVariable xmlTsVariable = new XmlTsVariable();
+		xmlTsVariable.copy(tsVariable);
+		xmlTsVariable.name = "REG1LPY";
+		x13request.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
+		
+		X13Specification specification = PreSpecificationEnum.RSA5.getX13Specification().clone();
+		//TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY");  // bug in XmlTsVariableDescriptor
+		//descriptor.setEffect(ComponentType.Series); 
+		//specification.getRegArimaSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor});
+		XmlX13Specification xmlSpec = new XmlX13Specification();
+		xmlSpec.copy(specification);
+
+		x13request.setSeries(xmlSeries);
+		x13request.setPreSpecification(PreSpecificationEnum.RSA3);
+		x13request.setSpecification(xmlSpec);
+		
+		x13request.setOutputFilter(Arrays.asList("y", "ycal", "tde"));
+
+		FileOutputStream stream = new FileOutputStream("src/test/resources/x13request.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		writer.flush();
+		
+    	Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(x13request,writer);
+
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		X13Request xmlX13Request = (X13Request) unmarshaller.unmarshal(new File("src/test/resources/x13request.xml"));
+		TsData series = xmlX13Request.getSeries().create();
+
+		Assert.assertEquals(0.0,series.distance(reference),1e-12);
+	}
+ 
+	/** Test writing outputs in TS analysis */
+	@Test
+	public void testMarshalTSOutputs() throws Exception {
+
+		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
+		Marshaller marshaller = jaxb.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		
+		// Tramo-Seats processing
+		TsData series = readTsData("src/test/resources/RF061.csv");
+		TramoSeatsSpecification specification = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
+		CompositeResults results = TramoSeatsProcessingFactory.process(series,specification);
+
+		// Complete serialization
+		InformationSet info = InformationSetHelper.fromProcResults(results);
+		XmlInformationSet xmlInfo = new XmlInformationSet();
+		xmlInfo.copy(info);
+
+		FileOutputStream stream = new FileOutputStream("src/test/resources/tsout.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		marshaller.marshal(xmlInfo, writer);
+		writer.flush();
+
+		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
+		// Only the necessary output will be computed
+		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f","regression*"};
+		Set<String> set = new HashSet<String>(Arrays.asList(filters));
+
+		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);
+		XmlInformationSet xmlPartialInfo = new XmlInformationSet();
+		xmlPartialInfo.copy(partialInfo);
+
+		stream = new FileOutputStream("src/test/resources/tsoutp.xml");
+		writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		marshaller.marshal(xmlPartialInfo, writer);
+		writer.flush();
+	}
+
+
+    /** Test writing outputs in X13 analysis */
+	@Test
+	public void testMarshalX13Outputs() throws Exception {
+
+		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
+		Marshaller marshaller = jaxb.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		
+		// X13 processing
+		TsData series = readTsData("src/test/resources/RF061.csv");
+		X13Specification specification = PreSpecificationEnum.RSA5.getX13Specification().clone();
+		CompositeResults results = X13ProcessingFactory.process(series,specification);
+		
+		// Complete serialization
+		InformationSet info = InformationSetHelper.fromProcResults(results);
+		XmlInformationSet xmlInfo = new XmlInformationSet();
+		xmlInfo.copy(info);
+
+		FileOutputStream stream = new FileOutputStream("src/test/resources/x13out.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		marshaller.marshal(xmlInfo, writer);
+		writer.flush();
+
+		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
+		// Only the necessary output will be computed
+
+		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "regression*"};
+		Set<String> set = new HashSet<String>(Arrays.asList(filters));
+
+		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);
+		XmlInformationSet xmlPartialInfo = new XmlInformationSet();
+		xmlPartialInfo.copy(partialInfo);
+
+		stream = new FileOutputStream("src/test/resources/x13outp.xml");
+		writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+		marshaller.marshal(xmlPartialInfo, writer);
+		writer.flush();
+	}
+	
+/*	@Test
 	public void testMarshallTSSpecification() {
 
 		TramoSeatsSpecification specification = TramoSeatsSpecification.RSA5.clone();
@@ -183,8 +362,8 @@ public class JAXBTest {
 
 		System.out.println(specification.toLongString());
 	}
-
-	@Test
+*/
+/*	@Test
 	public void testMarshallX13Specification() {
 
 		X13Specification specification = X13Specification.RSA1.clone();
@@ -239,82 +418,5 @@ public class JAXBTest {
 
 		xmlSpec.serialize(new PrintWriter(System.out));
 
-	}
-
-	@Test
-	public void testMarshalTSOutputs() throws Exception {
-
-		// Tramo-Seats processing
-		SequentialProcessing<TsData> processing = TramoSeatsProcessingFactory.instance.generateProcessing(TramoSeatsSpecification.RSA4);
-		CompositeResults results = processing.process(SeasonalAdjustmentTest.exportsTS);
-
-		// Complete serialization
-		InformationSet info = InformationSetHelper.fromProcResults(results);
-		XmlInformationSet xmlInfo = new XmlInformationSet();
-		xmlInfo.copy(info);
-
-		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
-
-		FileOutputStream stream = new FileOutputStream("src/test/resources/tsout.xml");
-
-		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		Marshaller marshaller = jaxb.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		marshaller.marshal(xmlInfo, writer);
-
-		writer.flush();
-
-		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
-		// Only the necessary output will be computed
-		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "mstat*"};
-		Set<String> set = new HashSet<String>(Arrays.asList(filters));
-
-		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);
-		XmlInformationSet xmlPartialInfo = new XmlInformationSet();
-		xmlPartialInfo.copy(partialInfo);
-
-		stream = new FileOutputStream("src/test/resources/tsoutp.xml");
-		writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		marshaller.marshal(xmlPartialInfo, writer);
-		writer.flush();
-	}
-
-	@Test
-	public void testMarshalX13Outputs() throws Exception {
-
-		// X13 processing
-		SequentialProcessing<TsData> processing = X13ProcessingFactory.instance.generateProcessing(X13Specification.RSA4);
-		CompositeResults results = processing.process(SeasonalAdjustmentTest.exportsTS);
-
-		// Complete serialization
-		InformationSet info = InformationSetHelper.fromProcResults(results);
-		XmlInformationSet xmlInfo = new XmlInformationSet();
-		xmlInfo.copy(info);
-
-		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
-
-		FileOutputStream stream = new FileOutputStream("src/test/resources/x13out.xml");
-
-		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		Marshaller marshaller = jaxb.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		marshaller.marshal(xmlInfo, writer);
-
-		writer.flush();
-
-		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
-		// Only the necessary output will be computed
-
-		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "mstat*"};
-		Set<String> set = new HashSet<String>(Arrays.asList(filters));
-
-		InformationSet partialInfo = InformationSetHelper.fromProcResults(results, set);
-		XmlInformationSet xmlPartialInfo = new XmlInformationSet();
-		xmlPartialInfo.copy(partialInfo);
-
-		stream = new FileOutputStream("src/test/resources/x13outp.xml");
-		writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		marshaller.marshal(xmlPartialInfo, writer);
-		writer.flush();
-	}
+	}*/
 }
