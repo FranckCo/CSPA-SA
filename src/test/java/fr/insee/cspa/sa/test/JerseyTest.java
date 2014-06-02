@@ -34,7 +34,7 @@ public class JerseyTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 	
-/*	@Test
+	@Test
 	public void testTsAnalysis() throws Exception {
 			
 		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
@@ -54,7 +54,7 @@ public class JerseyTest {
 		FileOutputStream stream = new FileOutputStream("src/test/resources/tsjerseyout.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
 		marshaller.marshal(outputs, writer);
-	}*/
+	}
 	
 	@Test
 	public void testX13Analysis() throws Exception {
