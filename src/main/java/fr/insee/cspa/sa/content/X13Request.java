@@ -5,12 +5,11 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import ec.tss.xml.XmlTsData;
-import ec.tss.xml.regression.XmlTsVariable;
+import ec.tss.xml.regression.XmlTsVariables;
 import ec.tss.xml.x13.XmlX13Specification;
 
 @XmlRootElement(name = "X13Request")
@@ -26,9 +25,8 @@ public class X13Request {
     @XmlElement(name = "Specification")
     private XmlX13Specification specification;
 
-    @XmlElementWrapper(name = "UserRegressors")
-    @XmlElement(name="UserRegressor")
-    private XmlTsVariable[] userRegressors;
+    @XmlElement(name="UserRegressors")
+    private XmlTsVariables userRegressors;
 
     @XmlElement(name = "OutputFilter")
     @XmlList
@@ -58,11 +56,11 @@ public class X13Request {
 		this.specification = specification;
 	}
 
-	public XmlTsVariable[] getUserRegressors() {
+	public XmlTsVariables getUserRegressors() {
 		return userRegressors;
 	}
 
-	public void setUserRegressors(XmlTsVariable[] userRegressors) {
+	public void setUserRegressors(XmlTsVariables userRegressors) {
 		this.userRegressors = userRegressors;
 	}
 

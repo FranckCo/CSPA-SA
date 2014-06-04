@@ -28,13 +28,7 @@ public class UtilResource {
 				a.set(info.name, merge((InformationSet)itemA,(InformationSet)itemB,(InformationSet)itemC));
 			else if (itemB!=null && itemA.equals(itemC) && !itemB.equals(itemC)) a.set(info.name, itemB);
 		}
-		for (Information<Object> info : itemsB) {
-			itemB = info.value; itemA = a.search(info.name,Object.class); itemC = (c!=null)?c.search(info.name,Object.class):null;
-			if (itemA == null) a.add(info.name, b.getSubSet(info.name));
-			else if (itemA instanceof InformationSet && itemB instanceof InformationSet) 
-				a.set(info.name, merge((InformationSet)itemA,(InformationSet)itemB,(InformationSet)itemC));
-			else if (itemA.equals(itemC) && !itemB.equals(itemC)) a.set(info.name, itemB);
-		}	
+		for (Information<Object> info : itemsB) if (a.search(info.name,Object.class) == null) a.add(info.name, b.getSubSet(info.name));
 		return a;
 	}
 }

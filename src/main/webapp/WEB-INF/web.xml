@@ -15,5 +15,13 @@
 		<servlet-name>jersey-serlvet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+   <filter>
+        <filter-name>fr.insee.cspa.sa.content.AppConfig</filter-name>
+        <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>fr.insee.cspa.sa.content.AppConfig</param-value>
+        </init-param>
+    </filter>
 
 </web-app>
