@@ -21,10 +21,16 @@ public enum PreSpecificationEnum {
         this.value = value;
     }
     
+    /**
+     * Get the related tramoseats specification
+     */ 
     public TramoSeatsSpecification getTramoSeatsSpecification() {
     	return TramoSeatsSpecification.fromString(tsnames[value]);
     }
     
+    /**
+     * Get the related X13 specification
+     */ 
     public X13Specification getX13Specification() {
     	return X13Specification.fromString(x13names[value]);
     }

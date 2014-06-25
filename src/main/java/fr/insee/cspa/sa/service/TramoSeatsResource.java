@@ -78,7 +78,7 @@ public class TramoSeatsResource {
 		try {results = TramoSeatsProcessingFactory.process(series, specification);}
 		catch(Exception e) {return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();}
 			
-		// Get outputs
+		// Get outputs	
 		XmlInformationSet xmlOutputs = new XmlInformationSet();
 		InformationSet outputs = (outputFilter == null) ? InformationSetHelper.fromProcResults(results) 
 													: InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
