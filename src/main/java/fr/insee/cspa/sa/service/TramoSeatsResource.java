@@ -3,6 +3,7 @@ package fr.insee.cspa.sa.service;
 import java.util.List;
 import java.util.TreeSet;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -32,48 +33,60 @@ public class TramoSeatsResource {
 		buffer.append("POST => Tramo-Seats service analysis");
 		return Response.status(200).entity(buffer.toString()).build();
 	}
-
+	
 	/**
 	 * Get predefined specifications
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{type}")
-	public Response getTSSpecification(final @PathParam("type") PreSpecificationEnum type) {
+	public Response getTSSpecification(final @PathParam("type") String type) {
 		
-		XmlTramoSeatsSpecification xmlSpecification = new XmlTramoSeatsSpecification();
-		xmlSpecification.copy(type.getTramoSeatsSpecification());
+		try {
+			PreSpecificationEnum prespec = PreSpecificationEnum.valueOf(type.toUpperCase());
 		
-		return Response.status(200).entity(xmlSpecification).build();
+			XmlTramoSeatsSpecification xmlSpecification = new XmlTramoSeatsSpecification();
+			xmlSpecification.copy(prespec.getTramoSeatsSpecification());
+		
+			return Response.status(200).entity(xmlSpecification).build();
+		}
+		catch (IllegalArgumentException e) {
+			return Response.status(404).build();
+		}		
 	}
 	
 	/** 
 	 * Tramoseats analysis 
 	 */
 	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response runTramoSeatsAnalysis(TSRequest request) {
-		
+	
 		// Get request elements
 		TsData series = request.getSeries().create();
 		PreSpecificationEnum typePre = request.getPreSpecification();
 		TramoSeatsSpecification specification = request.getSpecification().create();
 		List<String> outputFilter = request.getOutputFilter();
 		//XmlTsVariable[] xmlVariables = request.getUserRegressors();
-	
+
 		// Merge preSpecification and specification	
-		specification = merge(specification, typePre);
-		
+		specification = merge(specification, typePre); 
+	
 		// Analysis
-		CompositeResults results = TramoSeatsProcessingFactory.process(series, specification); // TODO exception management ?
-		
+		CompositeResults results;
+		try {results = TramoSeatsProcessingFactory.process(series, specification);}
+		catch(Exception e) {return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();}
+			
 		// Get outputs
-		InformationSet outputs = InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		XmlInformationSet xmlOutputs = new XmlInformationSet();
+		InformationSet outputs = (outputFilter == null) ? InformationSetHelper.fromProcResults(results) 
+													: InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		xmlOutputs.copy(outputs);
-	
-		return Response.status(200).entity(xmlOutputs).build();
+		
+		return Response.status(Response.Status.OK).entity(xmlOutputs).build();
 	}
-	
+
 	/**
 	 * Merge specification with prespecification
 	 */	
@@ -90,7 +103,9 @@ public class TramoSeatsResource {
 				InformationSet infoPre = preSpecification.write(true);
 				InformationSet infoRef = reference.write(true);
 			
-				specification.read(UtilResource.merge(infoSpec, infoPre, infoRef));
+				InformationSet infoMerge = UtilResource.merge(infoSpec, infoPre, infoRef);
+				
+				specification.read(infoMerge);
 			}
 		}
 		return specification;

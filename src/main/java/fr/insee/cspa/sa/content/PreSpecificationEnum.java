@@ -13,7 +13,7 @@ public enum PreSpecificationEnum {
 	RSA5(5);
 	
 	private final int value;
- 
+
 	private final String[] tsnames = {"RSA0","RSA1","RSA2","RSA3","RSA4","RSA5"};
 	private final String[] x13names = {"X11","RSA1","RSA2c","RSA3","RSA4c","RSA5c"};
         

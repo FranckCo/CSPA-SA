@@ -3,10 +3,13 @@ package fr.insee.cspa.sa.service;
 import java.util.List;
 import java.util.TreeSet;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import ec.satoolkit.algorithm.implementation.X13ProcessingFactory;
@@ -35,19 +38,28 @@ public class X13Resource {
 	 * Get predefined specifications
 	 */
 	@GET
+	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{type}")
-	public Response getX13Specification(final @PathParam("type") PreSpecificationEnum type) {
+	public Response getX13Specification(final @PathParam("type") String type) {
 		
-		XmlX13Specification xmlSpecification = new XmlX13Specification();
-		xmlSpecification.copy(type.getX13Specification());
-		
-		return Response.status(200).entity(xmlSpecification).build();
+		try {
+			PreSpecificationEnum prespec = PreSpecificationEnum.valueOf(type.toUpperCase());
+			XmlX13Specification xmlSpecification = new XmlX13Specification();
+			xmlSpecification.copy(prespec.getX13Specification());
+			
+			return Response.status(200).entity(xmlSpecification).build();
+		}
+		catch(IllegalArgumentException e) {
+			return Response.status(404).build();
+		}
 	}
 	
 	/** 
 	 * X13 analysis 
 	 */
 	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response runTramoSeatsAnalysis(X13Request request) {
 		
 		// Get request elements
@@ -61,11 +73,14 @@ public class X13Resource {
 		specification = merge(specification, typePre);
 		
 		// Analysis
-		CompositeResults results = X13ProcessingFactory.process(series, specification); // TODO exception management ?
-		
+		CompositeResults results;
+		try {results = X13ProcessingFactory.process(series, specification);}
+		catch(Exception e) {return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();}
+				
 		// Get outputs
-		InformationSet outputs = InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		XmlInformationSet xmlOutputs = new XmlInformationSet();
+		InformationSet outputs = (outputFilter == null) ? InformationSetHelper.fromProcResults(results)
+													: InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		xmlOutputs.copy(outputs);
 	
 		return Response.status(200).entity(xmlOutputs).build();

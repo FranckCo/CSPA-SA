@@ -7,22 +7,22 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<version>0.1</version>
 	<packaging>war</packaging>
 	<name>Implementation of the CSPA Seasonal Adjustment Service</name>
+	<properties>
+		<demetra.version>1.4.1</demetra.version>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<!-- Targeting Servlet API 2.5. For version 3.0, use "jersey-container-servlet". -->
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>2.2</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.glassfish.jersey.ext</groupId>
-    		<artifactId>jersey-mvc-freemarker</artifactId>
-  		    <version>2.2</version>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>2.2</version>
+			<artifactId>jersey-media-moxy</artifactId>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -60,11 +60,6 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<properties>
-		<demetra.version>1.4.1</demetra.version>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
-	</properties>
 	<repositories>
 		<repository>
 			<id>joinup-releases</id>

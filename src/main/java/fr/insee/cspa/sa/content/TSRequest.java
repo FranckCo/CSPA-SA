@@ -14,6 +14,7 @@ import ec.tss.xml.tramoseats.XmlTramoSeatsSpecification;
 
 @XmlRootElement(name = "TSRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
+
 public class TSRequest {
 
     @XmlElement(name = "Series")

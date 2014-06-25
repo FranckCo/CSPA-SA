@@ -2,26 +2,34 @@
 <web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
 	<servlet>
-		<servlet-name>jersey-serlvet</servlet-name>
+		<servlet-name>jersey-servlet</servlet-name>
 		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>fr.insee.cspa.sa.service</param-value>
 		</init-param>
+		<init-param>
+        	<param-name>jersey.config.server.provider.classnames</param-name>
+        	<param-value>org.glassfish.jersey.filter.LoggingFilter</param-value>
+    	</init-param>
+    	<init-param>
+        	<param-name>jersey.config.server.tracing</param-name>
+        	<param-value>ALL</param-value>
+    	</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>jersey-serlvet</servlet-name>
+		<servlet-name>jersey-servlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
-   <filter>
-        <filter-name>fr.insee.cspa.sa.content.AppConfig</filter-name>
-        <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>fr.insee.cspa.sa.content.AppConfig</param-value>
-        </init-param>
-    </filter>
 
+    <filter>
+    	<filter-name>CorsFilter</filter-name>
+    	<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+    	<filter-name>CorsFilter</filter-name>
+    	<url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

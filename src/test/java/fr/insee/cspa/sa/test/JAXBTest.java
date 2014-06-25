@@ -28,13 +28,16 @@ import ec.satoolkit.tramoseats.TramoSeatsSpecification;
 import ec.satoolkit.x13.X13Specification;
 import ec.tss.xml.XmlTsData;
 import ec.tss.xml.information.XmlInformationSet;
-import ec.tss.xml.regression.XmlTsVariable;
+import ec.tss.xml.regression.XmlTsVariables;
 import ec.tss.xml.tramoseats.XmlTramoSeatsSpecification;
 import ec.tss.xml.x13.XmlX13Specification;
 import ec.tstoolkit.algorithm.CompositeResults;
 import ec.tstoolkit.information.InformationSet;
 import ec.tstoolkit.information.InformationSetHelper;
+import ec.tstoolkit.modelling.ComponentType;
+import ec.tstoolkit.modelling.TsVariableDescriptor;
 import ec.tstoolkit.timeseries.regression.TsVariable;
+import ec.tstoolkit.timeseries.regression.TsVariables;
 import ec.tstoolkit.timeseries.simplets.TsData;
 import ec.tstoolkit.timeseries.simplets.TsFrequency;
 import ec.tstoolkit.timeseries.simplets.TsPeriod;
@@ -123,14 +126,17 @@ public class JAXBTest {
 		
 		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
 		TsVariable tsVariable = new TsVariable("REG1", reg1);
-		XmlTsVariable xmlTsVariable = new XmlTsVariable();
-		xmlTsVariable.copy(tsVariable);
-		xmlTsVariable.name = "REG1LPY";
-		tsRequest.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
+		TsVariables tsVariables = new TsVariables();
+		tsVariables.set("REG1LPY",tsVariable);
+		
+		XmlTsVariables xmlTsVariables = new XmlTsVariables();
+		xmlTsVariables.copy(tsVariables);
+		xmlTsVariables.name = "regressor";
+		tsRequest.setUserRegressors(xmlTsVariables);
 		
 		TramoSeatsSpecification specification = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
-		//TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY");  // bug in XmlTsVariableDescriptor
-		//descriptor.setEffect(ComponentType.Series); 
+		TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY"); 
+		descriptor.setEffect(ComponentType.Series); 
 		//specification.getTramoSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor});
 		XmlTramoSeatsSpecification xmlSpec = new XmlTramoSeatsSpecification();
 		xmlSpec.copy(specification);
@@ -196,10 +202,13 @@ public class JAXBTest {
 		
 		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
 		TsVariable tsVariable = new TsVariable("REG1", reg1);
-		XmlTsVariable xmlTsVariable = new XmlTsVariable();
-		xmlTsVariable.copy(tsVariable);
-		xmlTsVariable.name = "REG1LPY";
-		x13request.setUserRegressors(new XmlTsVariable[] {xmlTsVariable});
+		TsVariables tsVariables = new TsVariables();
+		tsVariables.set("REG1LPY",tsVariable);
+		
+		XmlTsVariables xmlTsVariables = new XmlTsVariables();
+		xmlTsVariables.copy(tsVariables);
+		xmlTsVariables.name = "regressor";
+		x13request.setUserRegressors(xmlTsVariables);
 		
 		X13Specification specification = PreSpecificationEnum.RSA5.getX13Specification().clone();
 		//TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY");  // bug in XmlTsVariableDescriptor
@@ -216,11 +225,10 @@ public class JAXBTest {
 
 		FileOutputStream stream = new FileOutputStream("src/test/resources/x13request.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		writer.flush();
-		
     	Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		marshaller.marshal(x13request,writer);
+		writer.flush();
 
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		X13Request xmlX13Request = (X13Request) unmarshaller.unmarshal(new File("src/test/resources/x13request.xml"));
@@ -306,117 +314,4 @@ public class JAXBTest {
 		marshaller.marshal(xmlPartialInfo, writer);
 		writer.flush();
 	}
-	
-/*	@Test
-	public void testMarshallTSSpecification() {
-
-		TramoSeatsSpecification specification = TramoSeatsSpecification.RSA5.clone();
-		XmlTramoSeatsSpecification xmlSpec = new XmlTramoSeatsSpecification();
-		xmlSpec.copy(specification);
-
-		xmlSpec.serialize(new PrintWriter(System.out));
-	}
-
-	@Test
-	public void testMarshallTSSpecificationRegression() {
-
-		TramoSeatsSpecification specification = TramoSeatsSpecification.RSA5.clone();
-
-		InterventionVariable iv1 = new InterventionVariable();
-		iv1.setDelta(3.14);
-		iv1.setD1DS(true);
-		InterventionVariable iv2 = new InterventionVariable();
-		iv2.setDelta(2.79);
-		iv2.setD1DS(false);
-
-		specification.getTramoSpecification().getRegression().add(iv1);
-		specification.getTramoSpecification().getRegression().add(iv2);
-
-		TsVariableDescriptor var1 = new TsVariableDescriptor();
-		var1.setName("var1");
-		var1.setLags(1, 3);
-
-		// FIXME Next instruction makes creates truncated serialization
-		//specification.getTramoSpecification().getRegression().add(var1);
-
-		Ramp ramp = new Ramp();
-		ramp.setStart(new Day(2001, Month.January, 0)); // Day is 0-based
-		ramp.setEnd(new Day(2004, Month.December, 30));
-
-		specification.getTramoSpecification().getRegression().add(ramp);
-
-		XmlTramoSeatsSpecification xmlSpec = new XmlTramoSeatsSpecification();
-		xmlSpec.copy(specification);
-
-		xmlSpec.serialize(new PrintWriter(System.out));
-	}
-
-	@Test
-	public void testUnmarshallTSSpecification() throws JAXBException {
-
-		JAXBContext context = JAXBContext.newInstance(XmlTramoSeatsSpecification.class);
-
-		Unmarshaller unmarshaller = context.createUnmarshaller();
-		XmlTramoSeatsSpecification xmlSpec = (XmlTramoSeatsSpecification) unmarshaller.unmarshal(new File("src/test/resources/tssa3.xml"));
-		TramoSeatsSpecification specification = xmlSpec.create();
-
-		System.out.println(specification.toLongString());
-	}
-*/
-/*	@Test
-	public void testMarshallX13Specification() {
-
-		X13Specification specification = X13Specification.RSA1.clone();
-		XmlX13Specification xmlSpec = new XmlX13Specification();
-		xmlSpec.copy(specification);
-
-		xmlSpec.serialize(new PrintWriter(System.out));
-	}
-
-	@Test
-	public void testUnmarshallX13Specification() throws JAXBException, IOException {
-
-		JAXBContext context = JAXBContext.newInstance(ec.tss.xml.x13.XmlX13Specification.class);
-
-		Unmarshaller unmarshaller = context.createUnmarshaller();
-		XmlX13Specification xmlSpec = (XmlX13Specification) unmarshaller.unmarshal(new File("src/test/resources/x13sa5.xml"));
-		X13Specification specification = xmlSpec.create();
-
-		System.out.println(specification.toLongString());
-	}
-
-	@Test
-	public void testMarshallX13CalendarSpecification() throws JAXBException {
-
-		RegressionSpec specification = new RegressionSpec();
-		specification.setAICCDiff(3.14159);
-		// FIXME 
-		TradingDaysSpec tradingDays = new TradingDaysSpec();
-		tradingDays.setAutoAdjust(true);
-		tradingDays.setStockTradingDays(24);
-		tradingDays.setTradingDaysType(ec.tstoolkit.timeseries.calendars.TradingDaysType.WorkingDays);
-		tradingDays.setHolidays("holiday");
-		tradingDays.setChangeOfRegime(new ChangeOfRegimeSpec(new Day(2013, Month.April, 0), Type.Full));
-		specification.setTradingDays(tradingDays);
-
-		MovingHolidaySpec mhSpec1 = MovingHolidaySpec.easterSpec(true);
-		MovingHolidaySpec mhSpec2 = MovingHolidaySpec.easterSpec(false);
-
-		specification.setMovingHolidays(new MovingHolidaySpec[] {mhSpec1, mhSpec2});
-
-		// Can't marshall directly XmlXmlCalendarSpec
-		//XmlCalendarSpec xmlSpec = XmlCalendarSpec.create(specification);
-		//JAXBContext context = JAXBContext.newInstance(XmlCalendarSpec.class);
-		//Marshaller marshaller = context.createMarshaller();
-		//marshaller.marshal(xmlSpec, System.out);
-
-		X13Specification x13Spec = X13Specification.RSA1.clone();
-		x13Spec.getRegArimaSpecification().setRegression(specification);
-
-		XmlX13Specification xmlSpec = new XmlX13Specification();
-		xmlSpec.copy(x13Spec);
-
-		xmlSpec.serialize(new PrintWriter(System.out));
-
-	}*/
 }
