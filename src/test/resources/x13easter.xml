@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<x13:x13Spec xmlns:uscb="ec/tss.uscb" xmlns:tss="ec/tss.core" xmlns:x13="ec/tss.x13">
+<x13:x13Spec xmlns:trs="ec/tss.tramoseats" xmlns="ec/tss.core" xmlns:uscb="ec/tss.uscb" xmlns:arima="ec/tss.arima" xmlns:sa="ec/tss.sa" xmlns:tss="ec/tss.core" xmlns:x12="ec/tss.x12" xmlns:x13="ec/tss.x13">
     <x13:transformSpec>
         <uscb:auto/>
     </x13:transformSpec>
-    <x13:arimaSpec>
-        <x13:spec>
-            <uscb:p>0</uscb:p>
-            <uscb:d>1</uscb:d>
-            <uscb:q>1</uscb:q>
-            <uscb:bp>0</uscb:bp>
-            <uscb:bd>1</uscb:bd>
-            <uscb:bq>1</uscb:bq>
-        </x13:spec>
-    </x13:arimaSpec>
+    <x13:autoModelSpec/>
     <x13:calendarSpec>
         <uscb:tdVariables>
-            <uscb:tdoption>Td1Coef</uscb:tdoption>
+            <uscb:tdoption>Td</uscb:tdoption>
             <uscb:lpoption>None</uscb:lpoption>
             <uscb:aicTest>Remove</uscb:aicTest>
         </uscb:tdVariables>
         <uscb:movingHolidaySpec>
             <uscb:movingHolidaySpecType>
                 <uscb:type>Easter</uscb:type>
-                <uscb:w>8</uscb:w>
+                <uscb:w>2</uscb:w>
                 <uscb:aicTest>Add</uscb:aicTest>
             </uscb:movingHolidaySpecType>
         </uscb:movingHolidaySpec>

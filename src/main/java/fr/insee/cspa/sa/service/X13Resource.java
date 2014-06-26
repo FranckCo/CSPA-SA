@@ -12,6 +12,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
+
 import ec.satoolkit.algorithm.implementation.X13ProcessingFactory;
 import ec.satoolkit.x13.X13Specification;
 import ec.tss.xml.information.XmlInformationSet;
@@ -26,20 +28,25 @@ import fr.insee.cspa.sa.content.X13Request;
 @Path("x13")
 public class X13Resource {
 
+	private Logger logger = Logger.getRootLogger();
+	
+	/**
+	 *  Information about services
+	 */
 	@GET
 	public Response goToGet() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("GET /type => Detail of predefined Specification [type] where type = RSA0 ... RSA5<br/>");
 		buffer.append("POST => X13 service analysis");
-		return Response.status(200).entity(buffer.toString()).build();
+		return Response.status(Response.Status.OK).entity(buffer.toString()).build();
 	}
 
 	/**
 	 * Get predefined specifications
 	 */
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{type}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getX13Specification(final @PathParam("type") String type) {
 		
 		try {
@@ -47,10 +54,12 @@ public class X13Resource {
 			XmlX13Specification xmlSpecification = new XmlX13Specification();
 			xmlSpecification.copy(prespec.getX13Specification());
 			
-			return Response.status(200).entity(xmlSpecification).build();
+			logger.info("Send X13 pre-specification "+type);
+			return Response.status(Response.Status.OK).entity(xmlSpecification).build();
 		}
 		catch(IllegalArgumentException e) {
-			return Response.status(404).build();
+			logger.info("Unknown X13 pre-specification "+type);
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 	}
 	
@@ -58,9 +67,9 @@ public class X13Resource {
 	 * X13 analysis 
 	 */
 	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response runTramoSeatsAnalysis(X13Request request) {
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response runTramoSeatsAnalysis(X13Request request) throws Exception {
 		
 		// Get request elements
 		TsData series = request.getSeries().create();
@@ -74,8 +83,13 @@ public class X13Resource {
 		
 		// Analysis
 		CompositeResults results;
-		try {results = X13ProcessingFactory.process(series, specification);}
-		catch(Exception e) {return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();}
+		try {
+			results = X13ProcessingFactory.process(series, specification);
+		}
+		catch(Exception e) {
+			logger.error("X13 analysis error : "+e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+		}
 				
 		// Get outputs
 		XmlInformationSet xmlOutputs = new XmlInformationSet();
@@ -83,7 +97,8 @@ public class X13Resource {
 													: InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		xmlOutputs.copy(outputs);
 	
-		return Response.status(200).entity(xmlOutputs).build();
+		logger.info("X13 analysis done");
+		return Response.status(Response.Status.OK).entity(xmlOutputs).build();
 	}
 	
 	/**

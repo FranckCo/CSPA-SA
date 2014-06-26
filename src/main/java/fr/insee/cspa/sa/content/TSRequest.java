@@ -33,6 +33,7 @@ public class TSRequest {
     @XmlList
     private List<String> outputFilter;
 
+    // GETTERS AND SETTERS
 	public XmlTsData getSeries() {
 		return series;
 	}

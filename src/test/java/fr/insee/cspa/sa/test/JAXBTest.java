@@ -63,9 +63,10 @@ public class JAXBTest {
 	    ArrayList<Date> dates = new ArrayList<Date>();
 	    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 	    
+	    // Read lines
 		buffer = new BufferedReader(new FileReader(filename));
 		try {
-			buffer.readLine();
+			buffer.readLine(); // skip header line
 			while ((line = buffer.readLine()) != null) {
 				String[] elements = line.split(sep);
 				if (elements.length < 2) continue; 
@@ -76,6 +77,7 @@ public class JAXBTest {
 		catch(Exception e) {buffer.close(); throw e;}
 		buffer.close();
 		
+		// Guess frequency and transform data into TsData format
 		if (dates.size()<2) throw new Exception("too short file");
 		int duration = (int)((dates.get(1).getTime() - dates.get(0).getTime())/(1000.*3600*24*28));
 		TsFrequency frequency = TsFrequency.valueOf(12/duration);
@@ -83,6 +85,7 @@ public class JAXBTest {
 		double[] data = new double[values.size()];
 		int i=0; for (Double d : values) data[i++]=d.doubleValue(); 
 		TsData series = new TsData(start, data, true);
+		
 		return series;
 	}
 	
@@ -92,11 +95,13 @@ public class JAXBTest {
 	public void testUnmarshallTsData() throws Exception {
 	
     	JAXBContext context = JAXBContext.newInstance(XmlTsData.class);
-		
+	
+    	// Get a series and transform it to XmlTsData
 		TsData reference = readTsData("src/test/resources/RF061.csv");
 		XmlTsData xmlReference = new XmlTsData();
 		xmlReference.copy(reference);
 
+		// Write schema into file 
 		FileOutputStream stream = new FileOutputStream("src/test/resources/RF061.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
 		
@@ -105,10 +110,12 @@ public class JAXBTest {
 		marshaller.marshal(xmlReference, writer); 
 		writer.flush();
 		
+		// Read schema
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		XmlTsData xmlSeries = (XmlTsData) unmarshaller.unmarshal(new File("src/test/resources/RF061.xml"));
 		TsData series = xmlSeries.create();
 
+		// Test if read and original series are equals
 		Assert.assertEquals(0.0,series.distance(reference),1e-12);
 	}
 
@@ -118,35 +125,40 @@ public class JAXBTest {
 
 		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
 		
-		TSRequest tsRequest = new TSRequest();
-
-		TsData reference = readTsData("src/test/resources/RF061.csv");
-		XmlTsData xmlSeries = new XmlTsData();
-		xmlSeries.copy(reference);
-		
+		// User regressor 
 		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
 		TsVariable tsVariable = new TsVariable("REG1", reg1);
 		TsVariables tsVariables = new TsVariables();
 		tsVariables.set("REG1LPY",tsVariable);
-		
+	
 		XmlTsVariables xmlTsVariables = new XmlTsVariables();
 		xmlTsVariables.copy(tsVariables);
 		xmlTsVariables.name = "regressor";
-		tsRequest.setUserRegressors(xmlTsVariables);
-		
-		TramoSeatsSpecification specification = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
+	
 		TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY"); 
 		descriptor.setEffect(ComponentType.Series); 
-		//specification.getTramoSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor});
+	
+		// Specification. Link to user regressor does not work : bug in XmlTsVariableDescriptor
+		TramoSeatsSpecification specification = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
+		//specification.getTramoSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor}); 
 		XmlTramoSeatsSpecification xmlSpec = new XmlTramoSeatsSpecification();
 		xmlSpec.copy(specification);
-
-		tsRequest.setSeries(xmlSeries);
-		tsRequest.setPreSpecification(PreSpecificationEnum.RSA3);
-		tsRequest.setSpecification(xmlSpec);
+			
+		// Series
+		TsData reference = readTsData("src/test/resources/RF061.csv");
+		XmlTsData xmlSeries = new XmlTsData();
+		xmlSeries.copy(reference);
+	
+		// Create a TSRequest and add : user regressor, prespecification, specification, series, output filter
+		TSRequest tsRequest = new TSRequest();
 		
+		tsRequest.setPreSpecification(PreSpecificationEnum.RSA3);
+		tsRequest.setUserRegressors(xmlTsVariables);
+		tsRequest.setSpecification(xmlSpec);
+		tsRequest.setSeries(xmlSeries);
 		tsRequest.setOutputFilter(Arrays.asList("y", "ycal", "tde"));
 
+		// Write related XML schema into file
 		FileOutputStream stream = new FileOutputStream("src/test/resources/tsrequest.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
 		
@@ -155,6 +167,7 @@ public class JAXBTest {
 		marshaller.marshal(tsRequest,writer);
 		writer.flush();
 
+		// Read XML schema and check series
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		TSRequest xmlTSRequest = (TSRequest) unmarshaller.unmarshal(new File("src/test/resources/tsrequest.xml"));
 		TsData series = xmlTSRequest.getSeries().create();
@@ -168,19 +181,21 @@ public class JAXBTest {
 
 		JAXBContext context = JAXBContext.newInstance(XmlTramoSeatsSpecification.class);
 		
+		// Create Tramoseats specification
 		TramoSeatsSpecification reference = PreSpecificationEnum.RSA5.getTramoSeatsSpecification().clone();
 		reference.getTramoSpecification().getRegression().getCalendar().getEaster().setDuration(2);
 		XmlTramoSeatsSpecification xmlReference = new XmlTramoSeatsSpecification();
 		xmlReference.copy(reference);
 
+		// Write related schema into file
 		FileOutputStream stream = new FileOutputStream("src/test/resources/tseaster.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		
     	Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		marshaller.marshal(xmlReference,writer);
 		writer.flush();
 		
+		// Read XML schema and check Easter duration parameter 
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		XmlTramoSeatsSpecification xmlSpec = (XmlTramoSeatsSpecification) unmarshaller.unmarshal(new File("src/test/resources/tseaster.xml"));
 		TramoSeatsSpecification specification = xmlSpec.create();
@@ -194,12 +209,7 @@ public class JAXBTest {
 
 		JAXBContext context = JAXBContext.newInstance(X13Request.class);
 		
-		X13Request x13request = new X13Request();
-
-		TsData reference = readTsData("src/test/resources/RF061.csv");
-		XmlTsData xmlSeries = new XmlTsData();
-		xmlSeries.copy(reference);
-		
+		// User regressor
 		TsData reg1 = readTsData("src/test/resources/REG1LPY.csv");
 		TsVariable tsVariable = new TsVariable("REG1", reg1);
 		TsVariables tsVariables = new TsVariables();
@@ -208,21 +218,31 @@ public class JAXBTest {
 		XmlTsVariables xmlTsVariables = new XmlTsVariables();
 		xmlTsVariables.copy(tsVariables);
 		xmlTsVariables.name = "regressor";
-		x13request.setUserRegressors(xmlTsVariables);
 		
+		TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY"); 
+		descriptor.setEffect(ComponentType.Series); 
+		
+		// Specification. Link to user regressor does not work : bug in XmlTsVariableDescriptor
 		X13Specification specification = PreSpecificationEnum.RSA5.getX13Specification().clone();
-		//TsVariableDescriptor descriptor = new TsVariableDescriptor("REG1LPY");  // bug in XmlTsVariableDescriptor
-		//descriptor.setEffect(ComponentType.Series); 
 		//specification.getRegArimaSpecification().getRegression().setUserDefinedVariables(new TsVariableDescriptor[] {descriptor});
 		XmlX13Specification xmlSpec = new XmlX13Specification();
 		xmlSpec.copy(specification);
 
-		x13request.setSeries(xmlSeries);
-		x13request.setPreSpecification(PreSpecificationEnum.RSA3);
-		x13request.setSpecification(xmlSpec);
+		// Series
+		TsData reference = readTsData("src/test/resources/RF061.csv");
+		XmlTsData xmlSeries = new XmlTsData();
+		xmlSeries.copy(reference);
 		
+		// Create X13 Request and add user regressors, specification, prespecification, series and output filter
+		X13Request x13request = new X13Request();
+		
+		x13request.setUserRegressors(xmlTsVariables);
+		x13request.setSpecification(xmlSpec);
+		x13request.setPreSpecification(PreSpecificationEnum.RSA3);
+		x13request.setSeries(xmlSeries);
 		x13request.setOutputFilter(Arrays.asList("y", "ycal", "tde"));
 
+		// Write related schema into file
 		FileOutputStream stream = new FileOutputStream("src/test/resources/x13request.xml");
 		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
     	Marshaller marshaller = context.createMarshaller();
@@ -230,6 +250,7 @@ public class JAXBTest {
 		marshaller.marshal(x13request,writer);
 		writer.flush();
 
+		// Read XML schema and check series
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		X13Request xmlX13Request = (X13Request) unmarshaller.unmarshal(new File("src/test/resources/x13request.xml"));
 		TsData series = xmlX13Request.getSeries().create();
@@ -237,6 +258,35 @@ public class JAXBTest {
 		Assert.assertEquals(0.0,series.distance(reference),1e-12);
 	}
  
+	 /** Test easter in tramoseats specification */	
+	@Test
+	public void testEasterX13Specification() throws Exception {
+
+		JAXBContext context = JAXBContext.newInstance(XmlX13Specification.class);
+			
+		// Create X13 specification
+		X13Specification reference = PreSpecificationEnum.RSA5.getX13Specification().clone();
+		reference.getRegArimaSpecification().getRegression().getEaster().setW(2);
+		XmlX13Specification xmlReference = new XmlX13Specification();
+		xmlReference.copy(reference);
+
+		// Write related schema into file
+		FileOutputStream stream = new FileOutputStream("src/test/resources/x13easter.xml");
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
+	    Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(xmlReference,writer);
+		writer.flush();
+			
+		// Read XML schema and check Easter duration parameter 
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		XmlX13Specification xmlSpec = (XmlX13Specification) unmarshaller.unmarshal(new File("src/test/resources/x13easter.xml"));
+		X13Specification specification = xmlSpec.create();
+			
+		Assert.assertEquals(2,specification.getRegArimaSpecification().getRegression().getEaster().getW());	
+	}	
+
+
 	/** Test writing outputs in TS analysis */
 	@Test
 	public void testMarshalTSOutputs() throws Exception {
@@ -300,8 +350,6 @@ public class JAXBTest {
 		writer.flush();
 
 		// Partial serialization: only the main decomposition and the m-statistics (using wildcards)
-		// Only the necessary output will be computed
-
 		String[] filters = new String[] {"s", "sa", "t", "i", "s_f", "sa_f", "t_f", "i_f", "regression*"};
 		Set<String> set = new HashSet<String>(Arrays.asList(filters));
 

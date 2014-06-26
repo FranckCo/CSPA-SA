@@ -32,6 +32,7 @@ public class X13Request {
     @XmlList
     private List<String> outputFilter;
 
+    // GETTERS AND SETTERS
 	public XmlTsData getSeries() {
 		return series;
 	}

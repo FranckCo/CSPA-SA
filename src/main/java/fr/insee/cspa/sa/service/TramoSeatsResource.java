@@ -12,6 +12,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
+
 import ec.satoolkit.algorithm.implementation.TramoSeatsProcessingFactory;
 import ec.satoolkit.tramoseats.TramoSeatsSpecification;
 import ec.tss.xml.information.XmlInformationSet;
@@ -25,21 +27,26 @@ import fr.insee.cspa.sa.content.TSRequest;
 
 @Path("ts")
 public class TramoSeatsResource {
-
+	
+	private Logger logger = Logger.getRootLogger();
+	
+	/**
+	 * Information about services
+	 */
 	@GET
 	public Response goToGet() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("GET /type => Detail of predefined Specification [type] where type = RSA0 ... RSA5<br/>");
 		buffer.append("POST => Tramo-Seats service analysis");
-		return Response.status(200).entity(buffer.toString()).build();
+		return Response.status(Response.Status.OK).entity(buffer.toString()).build();
 	}
 	
 	/**
 	 * Get predefined specifications
 	 */
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{type}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getTSSpecification(final @PathParam("type") String type) {
 		
 		try {
@@ -48,10 +55,12 @@ public class TramoSeatsResource {
 			XmlTramoSeatsSpecification xmlSpecification = new XmlTramoSeatsSpecification();
 			xmlSpecification.copy(prespec.getTramoSeatsSpecification());
 		
-			return Response.status(200).entity(xmlSpecification).build();
+			logger.info("Send tramoseats pre-specification "+type);
+			return Response.status(Response.Status.OK).entity(xmlSpecification).build();
 		}
 		catch (IllegalArgumentException e) {
-			return Response.status(404).build();
+			logger.info("Unknown tramoseats pre-specification "+type);
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}		
 	}
 	
@@ -59,9 +68,9 @@ public class TramoSeatsResource {
 	 * Tramoseats analysis 
 	 */
 	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response runTramoSeatsAnalysis(TSRequest request) {
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response runTramoSeatsAnalysis(TSRequest request) throws Exception {
 	
 		// Get request elements
 		TsData series = request.getSeries().create();
@@ -72,18 +81,24 @@ public class TramoSeatsResource {
 
 		// Merge preSpecification and specification	
 		specification = merge(specification, typePre); 
-	
+		
 		// Analysis
 		CompositeResults results;
-		try {results = TramoSeatsProcessingFactory.process(series, specification);}
-		catch(Exception e) {return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();}
+		try {
+			results = TramoSeatsProcessingFactory.process(series, specification);
+		}
+		catch(Exception e) {
+			logger.error("Tramoseats analysis error : "+e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+		}
 			
 		// Get outputs	
 		XmlInformationSet xmlOutputs = new XmlInformationSet();
 		InformationSet outputs = (outputFilter == null) ? InformationSetHelper.fromProcResults(results) 
 													: InformationSetHelper.fromProcResults(results, new TreeSet<String>(outputFilter));
 		xmlOutputs.copy(outputs);
-		
+	
+		logger.info("Tramoseats analysis done");
 		return Response.status(Response.Status.OK).entity(xmlOutputs).build();
 	}
 

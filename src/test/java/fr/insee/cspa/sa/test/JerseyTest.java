@@ -34,19 +34,23 @@ public class JerseyTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 	
+	/** Test tramoseats analysis service */
 	@Test
 	public void testTsAnalysis() throws Exception {
 			
+		// Get XML schema of a tramoseats request
 		JAXBContext context = JAXBContext.newInstance(TSRequest.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		TSRequest xmlTSRequest = (TSRequest) unmarshaller.unmarshal(new File("src/test/resources/tsrequest.xml"));
 		
+		// Send request
 		Client client = ClientBuilder.newClient();
 		XmlInformationSet outputs = client
 									.target(TS_SERVICE_URL)
 									.request()
 									.post(Entity.entity(xmlTSRequest, MediaType.APPLICATION_XML),XmlInformationSet.class);
 		
+		// Write results into file
 		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
 		Marshaller marshaller = jaxb.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);		
@@ -57,18 +61,22 @@ public class JerseyTest {
 	}
 	
 	@Test
+	/** Test X13 analysis service */
 	public void testX13Analysis() throws Exception {
-			
+
+		// Get XML schema of a X13 request
 		JAXBContext context = JAXBContext.newInstance(X13Request.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		X13Request xmlX13Request = (X13Request) unmarshaller.unmarshal(new File("src/test/resources/x13request.xml"));
-		
+	
+		// Send request
 		Client client = ClientBuilder.newClient();
 		XmlInformationSet outputs = client
 									.target(X13_SERVICE_URL)
 									.request()
 									.post(Entity.entity(xmlX13Request, MediaType.APPLICATION_XML),XmlInformationSet.class);
-		
+
+		// Write results into file
 		JAXBContext jaxb = JAXBContext.newInstance(XmlInformationSet.class);
 		Marshaller marshaller = jaxb.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);		
