@@ -11,26 +11,27 @@ public class UtilResource {
 	UtilResource() {}
 	
 	/**
-	 * Merge InformationSet
-	 * @param a : specified InformationSet
-	 * @param b : model InformationSet
-	 * @param c : default InformationSet
+	 * Creates an <code>InformationSet</code> object by combining three input information sets.
+	 * 
+	 * @param explicit <code>InformationSet</code> object specified explicitly.
+	 * @param implicit <code>InformationSet</code> object corresponding to a predetermined specification.
+	 * @param base <code>InformationSet</code> object with default values.
 	 */
-	static public InformationSet merge(InformationSet a, InformationSet b, InformationSet c) {
+	static public InformationSet merge(InformationSet explicit, InformationSet implicit, InformationSet base) {
 		
-		List<Information<Object>> itemsA = a.select(Object.class);
-		List<Information<Object>> itemsB = b.select(Object.class);
-		Object itemA, itemB, itemC;
+		List<Information<Object>> itemsExplicit = explicit.select(Object.class);
+		List<Information<Object>> itemsImplicit = implicit.select(Object.class);
+		Object itemExplicit, itemImplicit, itemBase;
 		
-	    for (Information<Object> info : itemsA) {
-			itemA = info.value;
-			itemB = b.search(info.name, Object.class);
-			itemC = (c != null) ? c.search(info.name, Object.class) : null;
-			if (itemA instanceof InformationSet && itemB != null && itemB instanceof InformationSet) 
-				a.set(info.name, merge((InformationSet)itemA, (InformationSet) itemB, (InformationSet) itemC));
-			else if (itemB != null && itemA.equals(itemC) && !itemB.equals(itemC)) a.set(info.name, itemB);
+	    for (Information<Object> info : itemsExplicit) {
+			itemExplicit = info.value;
+			itemImplicit = implicit.search(info.name, Object.class);
+			itemBase = (base != null) ? base.search(info.name, Object.class) : null;
+			if (itemExplicit instanceof InformationSet && itemImplicit != null && itemImplicit instanceof InformationSet) 
+				explicit.set(info.name, merge((InformationSet) itemExplicit, (InformationSet) itemImplicit, (InformationSet) itemBase));
+			else if (itemImplicit != null && itemExplicit.equals(itemBase) && !itemImplicit.equals(itemBase)) explicit.set(info.name, itemImplicit);
 		}
-		for (Information<Object> info : itemsB) if (a.search(info.name,Object.class) == null) a.add(info.name, b.getSubSet(info.name));
-		return a;
+		for (Information<Object> info : itemsImplicit) if (explicit.search(info.name, Object.class) == null) explicit.add(info.name, implicit.getSubSet(info.name));
+		return explicit;
 	}
 }
