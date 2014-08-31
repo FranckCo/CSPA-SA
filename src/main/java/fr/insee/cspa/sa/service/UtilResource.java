@@ -23,10 +23,12 @@ public class UtilResource {
 		Object itemA, itemB, itemC;
 		
 	    for (Information<Object> info : itemsA) {
-			itemA = info.value; itemB = b.search(info.name,Object.class); itemC = (c!=null)?c.search(info.name,Object.class):null;
+			itemA = info.value;
+			itemB = b.search(info.name, Object.class);
+			itemC = (c != null) ? c.search(info.name, Object.class) : null;
 			if (itemA instanceof InformationSet && itemB != null && itemB instanceof InformationSet) 
-				a.set(info.name, merge((InformationSet)itemA,(InformationSet)itemB,(InformationSet)itemC));
-			else if (itemB!=null && itemA.equals(itemC) && !itemB.equals(itemC)) a.set(info.name, itemB);
+				a.set(info.name, merge((InformationSet)itemA, (InformationSet) itemB, (InformationSet) itemC));
+			else if (itemB != null && itemA.equals(itemC) && !itemB.equals(itemC)) a.set(info.name, itemB);
 		}
 		for (Information<Object> info : itemsB) if (a.search(info.name,Object.class) == null) a.add(info.name, b.getSubSet(info.name));
 		return a;

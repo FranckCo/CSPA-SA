@@ -12,6 +12,11 @@ import ec.tss.xml.XmlTsData;
 import ec.tss.xml.regression.XmlTsVariables;
 import ec.tss.xml.x13.XmlX13Specification;
 
+/**
+ * The <code>X13Request</code> class maps the input request to the X13 seasonal adjustment service.
+ * 
+ * @author Franck Cotton, Guillaume Rateau
+ */
 @XmlRootElement(name = "X13Request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class X13Request {
@@ -25,14 +30,17 @@ public class X13Request {
     @XmlElement(name = "Specification")
     private XmlX13Specification specification;
 
-    @XmlElement(name="UserRegressors")
+    @XmlElement(name = "UserRegressors")
     private XmlTsVariables userRegressors;
 
     @XmlElement(name = "OutputFilter")
     @XmlList
     private List<String> outputFilter;
 
-    // GETTERS AND SETTERS
+    /* ------------------- */
+    /* Getters and setters */
+    /* ------------------- */
+
 	public XmlTsData getSeries() {
 		return series;
 	}

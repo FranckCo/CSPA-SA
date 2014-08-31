@@ -5,6 +5,11 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Maps an exception to a web service response.
+ * 
+ * @author Guillaume Rateau
+ */
 @Provider
 public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
 	
@@ -13,7 +18,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
 	public ExceptionMapper() {}
 	
 	public Response toResponse(Exception e) {
-		logger.error("Error while converting request : "+e.getMessage());
+		logger.error("Error while converting request : " + e.getMessage());
 		return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 	}
 }

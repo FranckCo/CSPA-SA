@@ -12,9 +12,13 @@ import ec.tss.xml.XmlTsData;
 import ec.tss.xml.regression.XmlTsVariables;
 import ec.tss.xml.tramoseats.XmlTramoSeatsSpecification;
 
+/**
+ * The <code>TSRequest</code> class maps the input request to the Tramo-Seats seasonal adjustment service.
+ * 
+ * @author Franck Cotton, Guillaume Rateau
+ */
 @XmlRootElement(name = "TSRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
-
 public class TSRequest {
 
     @XmlElement(name = "Series")
@@ -26,14 +30,17 @@ public class TSRequest {
     @XmlElement(name = "Specification")
     private XmlTramoSeatsSpecification specification;
 
-    @XmlElement(name="UserRegressors")
+    @XmlElement(name = "UserRegressors")
     private XmlTsVariables userRegressors;
 
     @XmlElement(name = "OutputFilter")
     @XmlList
     private List<String> outputFilter;
 
-    // GETTERS AND SETTERS
+    /* ------------------- */
+    /* Getters and setters */
+    /* ------------------- */
+
 	public XmlTsData getSeries() {
 		return series;
 	}

@@ -3,6 +3,11 @@ package fr.insee.cspa.sa.content;
 import ec.satoolkit.tramoseats.TramoSeatsSpecification;
 import ec.satoolkit.x13.X13Specification;
 
+/**
+ * The <code>PreSpecificationEnum</code> enumeration lists the identifiers corresponding to the predefined Tramo-Seats or X13 specifications.
+ * 
+ * @author Franck Cotton, Guillaume Rateau.
+ */
 public enum PreSpecificationEnum {
 	
 	RSA0(0), 
@@ -14,24 +19,31 @@ public enum PreSpecificationEnum {
 	
 	private final int value;
 
-	private final String[] tsnames = {"RSA0","RSA1","RSA2","RSA3","RSA4","RSA5"};
-	private final String[] x13names = {"X11","RSA1","RSA2c","RSA3","RSA4c","RSA5c"};
+	/** Usual names for the Tramo-Seats predefined specifications */
+	private final String[] tsNames = {"RSA0","RSA1","RSA2","RSA3","RSA4","RSA5"};
+
+	/** Usual names for the X13 predefined specifications */
+	private final String[] x13Names = {"X11","RSA1","RSA2c","RSA3","RSA4c","RSA5c"};
         
     private PreSpecificationEnum(int value) {
         this.value = value;
     }
     
     /**
-     * Get the related tramoseats specification
+     * Gets the predefined Tramo-Seats specification corresponding to this identifier.
+     * 
+     * @return A <code>TramoSeatsSpecification</code> object.
      */ 
     public TramoSeatsSpecification getTramoSeatsSpecification() {
-    	return TramoSeatsSpecification.fromString(tsnames[value]);
+    	return TramoSeatsSpecification.fromString(tsNames[value]);
     }
     
     /**
-     * Get the related X13 specification
+     * Gets the predefined related X13 specification specification corresponding to this identifier.
+     * 
+     * @return A <code>X13Specification</code> object.
      */ 
     public X13Specification getX13Specification() {
-    	return X13Specification.fromString(x13names[value]);
+    	return X13Specification.fromString(x13Names[value]);
     }
 }
