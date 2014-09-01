@@ -1,0 +1,14 @@
+body {font-family: Arial,sans-serif; margin: 20px;}
+.logo {float: left; margin-right: 20px}
+h1 {
+    font-size: 24px;
+    padding-top: 15px;
+	margin-bottom: 0;
+}
+h2 {
+    font-size: 18px;
+    margin: 0;
+}
+a:link, a:visited, a:active {
+    text-decoration: none;
+}
