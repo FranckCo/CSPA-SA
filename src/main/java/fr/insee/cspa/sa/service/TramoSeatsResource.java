@@ -1,5 +1,6 @@
 package fr.insee.cspa.sa.service;
 
+import java.net.URI;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -9,8 +10,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.log4j.Logger;
 
@@ -31,14 +34,16 @@ public class TramoSeatsResource {
 	private Logger logger = Logger.getRootLogger();
 	
 	/**
-	 * Information about services
+	 * GET request on the /ts root: redirect on the default web page giving information about the services.
 	 */
 	@GET
-	public Response goToGet() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("GET /type => Detail of predefined Specification [type] where type = RSA0 ... RSA5<br/>");
-		buffer.append("POST => Tramo-Seats service analysis");
-		return Response.status(Response.Status.OK).entity(buffer.toString()).build();
+	public Response goToGet(@Context UriInfo uriInfo) {
+//		StringBuffer buffer = new StringBuffer();
+//		buffer.append("GET /type => Detail of predefined Specification [type] where type = RSA0 ... RSA5<br/>");
+//		buffer.append("POST => Tramo-Seats service analysis");
+//		return Response.status(Response.Status.OK).entity(buffer.toString()).build();
+		URI uri = uriInfo.getBaseUriBuilder().path("/static/default.htm").build();
+	    return Response.seeOther(uri).build();
 	}
 	
 	/**
