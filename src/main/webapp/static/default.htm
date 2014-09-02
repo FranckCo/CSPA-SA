@@ -21,9 +21,23 @@
 
 		<div id="content" class="page view">
 
-			<div class="wiki-content">
-				<p>The Common Statistical Production Architecture (CSPA) was developed during 2013 in an international collaboration project under the High-Level Group for the Modernisation of Statistical Production and Services(HLG). That project included the development and specification of the architecture, as well as a practical test of its principles and applicability in a “proof of concept”. However, given the strict time limits for that project (one year), it deliberately did not include the implementation of the architecture for production systems within statistical organisations. A follow-up project to cover early implementations and the development of key supporting resources such as a catalogue of artefacts, was seen as a top priority by the <a href="/stat/platform/display/hlgbas/Workshops">Workshop on Modernisation of Statistical Production and Services</a> (Geneva, 25-27 November 2013). The HLG subsequently agreed that this should form one of two key modernisation projects for 2014.</p>
-				<p>By the end of 2014, this project aims to create the first “production” CSPA-compliant services, and implement them in several statistical organisations. It will not create the full set of services needed for all statistical production activities, but it will show how this could be done. It will result in the practical application of CSPA, and could result in enhancements to the architecture based on implementation experiences.</p>
+			<div class="content">
+				<p>The Common Statistical Production Architecture (CSPA) was developed during 2013 in an international collaboration project under the High-Level Group for the Modernisation of Statistical Production and Services (HLG). That project included the development and specification of the architecture, as well as a practical test of its principles and applicability in a "proof of concept". However, given the strict time limits for that project (one year), it deliberately did not include the implementation of the architecture for production systems within statistical organisations. A follow-up project to cover early implementations and the development of key supporting resources such as a catalogue of artefacts, was selected by the HLG as one of two key modernisation projects for 2014.</p>
+				<p>The Seasonal Adjustment Service (SAS) is one of the CSPA services developed in the "Implementing CSPA" Project. It is a REST service wrapping the <a href="http://www.cros-portal.eu/content/jdemetra">JDemetra+</a> software.</p>
+				<p>The following operations are available:</p>
+				<table>
+					<caption>In this table, the URI are relative, and it is assumed that 'sas' is the web context for the service.</caption>
+					<thead>
+						<tr><th>HTTP method</th><th>URI</th><th>Description</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>GET</td><td>/sas, /sas/ts, /sas/x13</td><td>Redirects to a HTML page describing the service (this page).</td></tr>
+						<tr><td>GET</td><td>/sas/ts/{id}</td><td>Returns an XML file describing the predefined configuration {id} for Tramo-Seats.</td></tr>
+						<tr><td>GET</td><td>/sas/x13/{id}</td><td>Returns an XML file describing the predefined configuration {id} for X13.</td></tr>
+						<tr><td>POST</td><td>/sas/ts</td><td>Runs a Tramo-Seats analysis of a series and returns the results.</td></tr>
+						<tr><td>POST</td><td>/sas/x13</td><td>Runs an X13 analysis of a series and returns the results.</td></tr>
+					</tbody>
+				</table>
 			</div>  
 		</div>
 	</body>
