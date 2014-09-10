@@ -10,7 +10,7 @@
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.servlet.filter.staticContentRegex</param-name>
-			<param-value>/static/*</param-value>
+			<param-value>/static/?.*</param-value>
 		</init-param>
 <!--
   		<init-param>

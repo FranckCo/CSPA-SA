@@ -38,10 +38,6 @@ public class TramoSeatsResource {
 	 */
 	@GET
 	public Response goToGet(@Context UriInfo uriInfo) {
-//		StringBuffer buffer = new StringBuffer();
-//		buffer.append("GET /type => Detail of predefined Specification [type] where type = RSA0 ... RSA5<br/>");
-//		buffer.append("POST => Tramo-Seats service analysis");
-//		return Response.status(Response.Status.OK).entity(buffer.toString()).build();
 		URI uri = uriInfo.getBaseUriBuilder().path("/static/default.htm").build();
 	    return Response.seeOther(uri).build();
 	}
