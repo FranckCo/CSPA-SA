@@ -1,0 +1,218 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "CSPA Seasonal Adjustment Service",
+        "description": "Applies seasonal adjustment processing to time series with X13 or Tramo-Seats algorithms.",
+        "version": "1.0.0"
+    },
+    "host": "default-environment-iefnmepgh8.elasticbeanstalk.com",
+	"basePath": "/sas",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/xml",
+        "application/json"
+    ],
+    "produces": [
+        "application/xml",
+        "application/json"
+    ],
+    "paths": {
+        "/ts": {
+            "get": {
+                "summary": "Documentation about the Tramo-Seats algrithm.",
+                "description": "The /ts endpoint is the root for the Tramo-Seats branch of the Seasonal Adjustment Service. A GET request on this context will return an HTML page describing the service.",
+                "produces": [
+                    "text/html"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A documentation web page"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Runs a Tramo-Seats analysis of a series and returns the results.",
+                "description": "In order to seasonally adjust a series, both the series and the adjustment parameters must be POSTed to this endpoint. If the operation is successful, the response will contain the adjusted series and different additional results and metrics.",
+                "responses": {
+                    "200": {
+                        "description": "The seasonal adjustment operation was successfully performed, and the results are returned in the body of the response."
+                    },
+                    "400": {
+                        "description": "The input data cannot be read or contains some error."
+                    },
+                    "401": {
+                        "description": "The client is not authorized to use this service."
+                    }
+                }
+            }
+        },
+        "/ts/{specId}": {
+           "get": {
+              "summary": "Provides a Tramo-Seats predefined specification.",
+              "description": "TBD",
+                "parameters": [{
+                  "name": "specId",
+                  "in": "path",
+                  "description": "Identifier of the Tramo-Seats predefined specification requested. The identifier can be RSA0 to RSA5.",
+                  "required": true
+                }],
+              "responses": {
+                  "200": {
+                      "description": "The Tramo-Seats specification corrresponding to the identifier received"
+                  }
+              }
+           }
+        },
+        "/x13": {
+           "get": {
+                "summary": "Documentation about the X13 algrithm.",
+                "description": "The /x13 endpoint is the root for the X13 branch of the Seasonal Adjustment Service. A GET request on this context will return an HTML page describing the service.",
+                "produces": [
+                    "text/html"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A documentation web page"
+                    }
+                }
+           },
+           "post": {
+             
+           }
+        },
+        "/x13/{specId}": {
+           "get": {
+             
+           }
+        }
+    },
+    "definitions": {
+        "Product": {
+            "properties": {
+                "product_id": {
+                    "type": "string",
+                    "description": "Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of product."
+                },
+                "display_name": {
+                    "type": "string",
+                    "description": "Display name of product."
+                },
+                "capacity": {
+                    "type": "string",
+                    "description": "Capacity of product. For example, 4 people."
+                },
+                "image": {
+                    "type": "string",
+                    "description": "Image URL representing the product."
+                }
+            }
+        },
+        "PriceEstimate": {
+            "properties": {
+                "product_id": {
+                    "type": "string",
+                    "description": "Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles"
+                },
+                "currency_code": {
+                    "type": "string",
+                    "description": "[ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code."
+                },
+                "display_name": {
+                    "type": "string",
+                    "description": "Display name of product."
+                },
+                "estimate": {
+                    "type": "string",
+                    "description": "Formatted string of estimate in local currency of the start location. Estimate could be a range, a single number (flat rate) or \"Metered\" for TAXI."
+                },
+                "low_estimate": {
+                    "type": "number",
+                    "description": "Lower bound of the estimated price."
+                },
+                "high_estimate": {
+                    "type": "number",
+                    "description": "Upper bound of the estimated price."
+                },
+                "surge_multiplier": {
+                    "type": "number",
+                    "description": "Expected surge multiplier. Surge is active if surge_multiplier is greater than 1. Price estimate already factors in the surge multiplier."
+                }
+            }
+        },
+        "Profile": {
+            "properties": {
+                "first_name": {
+                    "type": "string",
+                    "description": "First name of the Uber user."
+                },
+                "last_name": {
+                    "type": "string",
+                    "description": "Last name of the Uber user."
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Email address of the Uber user"
+                },
+                "picture": {
+                    "type": "string",
+                    "description": "Image URL of the Uber user."
+                },
+                "promo_code": {
+                    "type": "string",
+                    "description": "Promo code of the Uber user."
+                }
+            }
+        },
+        "Activity": {
+            "properties": {
+                "uuid": {
+                    "type": "string",
+                    "description": "Unique identifier for the activity"
+                }
+            }
+        },
+        "Activities": {
+            "properties": {
+                "offset": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Position in pagination."
+                },
+                "limit": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Number of items to retrieve (100 max)."
+                },
+                "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Total number of items available."
+                },
+                "history": {
+                    "type": "array",
+                    "$ref": "Activity"
+                }
+            }
+        },
+        "Error": {
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
