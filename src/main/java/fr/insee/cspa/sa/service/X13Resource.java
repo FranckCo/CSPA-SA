@@ -28,7 +28,7 @@ import ec.tstoolkit.timeseries.simplets.TsData;
 import fr.insee.cspa.sa.content.PreSpecificationEnum;
 import fr.insee.cspa.sa.content.X13Request;
 
-@Path("x13")
+@Path("sas/x13")
 public class X13Resource {
 
 	private Logger logger = Logger.getRootLogger();

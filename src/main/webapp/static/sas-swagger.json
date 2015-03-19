@@ -1,0 +1,162 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "CSPA Seasonal Adjustment Service",
+    "description": "Applies seasonal adjustment processing to time series with X13 or Tramo-Seats algorithms.",
+    "version": "1.0.0"
+  },
+  "host": "cspa-sas-service-env.elasticbeanstalk.com",
+  "basePath": "/sas",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/xml",
+    "application/json"
+  ],
+  "produces": [
+    "application/xml",
+    "application/json"
+  ],
+  "paths": {
+    "/ts": {
+      "get": {
+        "summary": "Documentation about the Tramo-Seats algorithm.",
+        "description": "The /ts endpoint is the root for the Tramo-Seats branch of the Seasonal Adjustment Service. A GET request on this context will return an HTML page describing the service.",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "A documentation web page"
+          }
+        }
+      },
+      "post": {
+        "summary": "Runs a Tramo-Seats analysis of a series and returns the results.",
+        "description": "In order to seasonally adjust a series, both the series and the adjustment parameters must be POSTed to this endpoint, wrapped in a TSRequest object. If the operation is successful, the response will contain the adjusted series and different additional results and metrics.",
+        "parameters": [
+          {
+            "name": "tsRequest",
+            "in": "body",
+            "description": "The request object containing the series to be adjusted and the adjustment parameters to use.",
+            "schema": {
+              "$ref": "#/definitions/TSRequest"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The seasonal adjustment operation was successfully performed, and the results are returned in the body of the response.",
+            "schema": {
+              "$ref": "#/definitions/XmlInformationSet"
+            }
+          },
+          "400": {
+            "description": "The input data cannot be read or contains some error."
+          },
+          "401": {
+            "description": "The client is not authorized to use this service."
+          }
+        }
+      }
+    },
+    "/ts/{specId}": {
+      "get": {
+        "summary": "Provides a Tramo-Seats predefined specification.",
+        "description": "Returns an object describing the predefined Tramo-Seats specification corresponding to the identifier passed.",
+        "parameters": [
+          {
+            "name": "specId",
+            "in": "path",
+            "description": "Identifier of the Tramo-Seats predefined specification requested. The identifier can be RSA0 to RSA5.",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Tramo-Seats predefined specification corresponding to the identifier received",
+            "schema": {
+              "$ref": "#/definitions/XmlTramoSeatsSpecification"
+            }
+          }
+        }
+      }
+    },
+    "/x13": {
+      "get": {
+        "summary": "Documentation about the X13 algorithm.",
+        "description": "The /x13 endpoint is the root for the X13 branch of the Seasonal Adjustment Service. A GET request on this context will return an HTML page describing the service.",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "A documentation web page"
+          }
+        }
+      },
+      "post": {
+        "summary": "Runs an X13 analysis of a series and returns the results.",
+        "description": "In order to seasonally adjust a series, both the series and the adjustment parameters must be POSTed to this endpoint, wrapped in an X13Request object. If the operation is successful, the response will contain the adjusted series and different additional results and metrics.",
+        "parameters": [
+          {
+            "name": "x13Request",
+            "in": "body",
+            "description": "The request object containing the series to be adjusted and the adjustment parameters to use.",
+            "schema": {
+              "$ref": "#/definitions/X13Request"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The seasonal adjustment operation was successfully performed, and the results are returned in the body of the response.",
+            "schema": {
+              "$ref": "#/definitions/XmlInformationSet"
+            }
+          },
+          "400": {
+            "description": "The input data cannot be read or contains some error."
+          },
+          "401": {
+            "description": "The client is not authorized to use this service."
+          }
+        }
+      }
+    },
+    "/x13/{specId}": {
+      "get": {
+        "summary": "Provides an X13 predefined specification.",
+        "description": "Returns an object describing the predefined X13 specification corresponding to the identifier passed.",
+        "parameters": [
+          {
+            "name": "specId",
+            "in": "path",
+            "description": "Identifier of the X13 predefined specification requested. The identifier can be RSA0 to RSA5, corresponding to the predefined specifications also known as X11, RSA1, RSA2c, RSA3, RSA4c and RSA5c.",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The X13 predefined specification corresponding to the identifier received",
+            "schema": {
+              "$ref": "#/definitions/XmlX13Specification"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "TSRequest": {},
+    "X13Request": {},
+    "XmlInformationSet": {},
+    "XmlTramoSeatsSpecification": {},
+    "XmlX13Specification": {}
+  }
+}

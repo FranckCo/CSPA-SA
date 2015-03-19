@@ -28,7 +28,7 @@ import ec.tstoolkit.timeseries.simplets.TsData;
 import fr.insee.cspa.sa.content.PreSpecificationEnum;
 import fr.insee.cspa.sa.content.TSRequest;
 
-@Path("ts")
+@Path("sas/ts")
 public class TramoSeatsResource {
 	
 	private Logger logger = Logger.getRootLogger();

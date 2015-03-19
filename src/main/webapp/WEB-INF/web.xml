@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app id="WebApp_ID" version="2.5"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
 	<filter>
 		<filter-name>jersey-filter</filter-name>
@@ -12,18 +14,19 @@
 			<param-name>jersey.config.servlet.filter.staticContentRegex</param-name>
 			<param-value>/static/?.*</param-value>
 		</init-param>
-<!--
-  		<init-param>
-        	<param-name>jersey.config.server.provider.classnames</param-name>
-        	<param-value>org.glassfish.jersey.filter.LoggingFilter</param-value>
-    	</init-param>
-    	<init-param>
-        	<param-name>jersey.config.server.tracing</param-name>
-        	<param-value>ALL</param-value>
-    	</init-param>
- -->
-		<!--   <load-on-startup>1</load-on-startup> -->
+		<init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>fr.insee.cspa.sa.config.CorsFilter</param-value>
+        </init-param>
 	</filter>
+
+
+	<!-- <init-param> <param-name>jersey.config.server.provider.classnames</param-name> 
+		<param-value>org.glassfish.jersey.filter.LoggingFilter</param-value> </init-param> 
+		<init-param> <param-name>jersey.config.server.tracing</param-name> <param-value>ALL</param-value> 
+		</init-param> -->
+	<!-- <load-on-startup>1</load-on-startup> -->
+
 
 	<filter-mapping>
 		<filter-name>jersey-filter</filter-name>
